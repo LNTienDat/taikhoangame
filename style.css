@@ -156,7 +156,7 @@ body {
   color: var(--danger);
 }
 
-/* ===== BỐ CỤC 3 CỘT (CỐ ĐỊNH CHIỀU CAO FULL ĐỒNG ĐỀU) ===== */
+/* ===== BỐ CỤC 3 CỘT ===== */
 .main {
   max-width: 1600px; margin: 0 auto;
   padding: 14px 20px 24px;
@@ -175,7 +175,7 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: 520px; /* Chiều cao cố định chuẩn cho cả 3 cột ở mọi trang */
+  height: 520px; /* Chiều cao chuẩn cố định */
   transition: background 0.3s, border-color 0.3s;
 }
 
@@ -211,12 +211,12 @@ body {
 [data-theme="dark"] .counter-remaining { background: #422006; color: #fbbf24; }
 [data-theme="dark"] .counter-done { background: #064e3b; color: #6ee7b7; }
 
-/* Thanh 4 nút hành động */
+/* Thanh 3 nút hành động */
 .panel-actions {
   padding: 8px 12px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
   border-bottom: 1px solid var(--border-light);
   flex-shrink: 0;
 }
@@ -233,8 +233,8 @@ body {
   transition: all 0.2s;
 }
 .panel-action-btn svg {
-  width: 15px;
-  height: 15px;
+  width: 16px;
+  height: 16px;
   stroke: currentColor;
   stroke-width: 2.2;
   fill: none;
@@ -279,11 +279,11 @@ body {
 .btn-outline:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
 .btn-sm { padding: 4px 10px; font-size: 0.74rem; }
 
-/* ===== DANH SÁCH TÀI KHOẢN ===== */
+/* ===== DANH SÁCH TÀI KHOẢN (7 DÒNG MỖI TRANG) ===== */
 .account-list {
   flex: 1;
   overflow-y: auto;
-  padding: 4px 0;
+  padding: 6px 0;
   display: flex;
   flex-direction: column;
 }
@@ -299,18 +299,47 @@ body {
 }
 .empty-state p { font-size: 0.84rem; line-height: 1.6; }
 
-/* Dòng tài khoản dạng Cột: Tên trong game | Tên đăng nhập */
+/* Dòng tài khoản dạng Cột: [⠿] [Checkbox] [Tên game | Tên đăng nhập] [✏️ 🗑️] */
 .account-row {
   display: flex; align-items: center;
-  padding: 7px 10px 7px 10px;
-  margin: 2px 6px;
+  padding: 10px 12px 10px 10px;
+  margin: 3px 6px;
   border-radius: var(--radius-md);
-  transition: background 0.15s, opacity 0.15s;
+  transition: background 0.15s, opacity 0.15s, transform 0.15s;
   position: relative; gap: 8px;
   animation: fadeIn 0.15s ease;
-  height: 36px;
+  min-height: 42px;
 }
 .account-row:hover { background: var(--bg-card-hover); }
+
+/* Kéo thả ⠿ */
+.drag-handle {
+  cursor: grab;
+  color: var(--text-muted);
+  font-size: 1.15rem;
+  line-height: 1;
+  padding: 0 3px;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s, transform 0.15s;
+  flex-shrink: 0;
+}
+.drag-handle:hover {
+  color: var(--text-primary);
+  transform: scale(1.15);
+}
+.drag-handle:active {
+  cursor: grabbing;
+}
+.account-row.dragging {
+  opacity: 0.35;
+  background: var(--accent-light);
+}
+.account-row.drag-over {
+  border-top: 2.5px solid var(--accent);
+}
 
 /* Acc đã đăng nhập: nền xanh, KHÔNG gạch ngang */
 .account-row.checked {
@@ -321,9 +350,9 @@ body {
 
 /* Checkbox */
 .custom-checkbox {
-  flex-shrink: 0; width: 20px; height: 20px;
+  flex-shrink: 0; width: 22px; height: 22px;
   border: 1.8px solid var(--border);
-  border-radius: 5px; cursor: pointer;
+  border-radius: 6px; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
   transition: all 0.15s;
   background: var(--bg-card);
@@ -332,7 +361,7 @@ body {
 .custom-checkbox.is-checked { background: var(--success); border-color: var(--success); }
 .custom-checkbox.is-checked svg { stroke: #fff; }
 .custom-checkbox svg {
-  width: 12px; height: 12px;
+  width: 13px; height: 13px;
   stroke: transparent; stroke-width: 3;
   fill: none; transition: stroke 0.15s;
 }
@@ -341,7 +370,7 @@ body {
 .account-cols {
   flex: 1; min-width: 0;
   display: flex; align-items: center;
-  gap: 6px; font-size: 0.84rem;
+  gap: 8px; font-size: 0.86rem;
 }
 .col-game {
   font-weight: 600;
@@ -357,7 +386,7 @@ body {
 }
 .col-acc {
   color: var(--text-secondary);
-  font-size: 0.82rem;
+  font-size: 0.84rem;
   word-break: break-all;
   flex: 1;
 }
@@ -368,24 +397,24 @@ body {
   flex-shrink: 0;
 }
 .row-action-btn {
-  width: 26px; height: 26px;
+  width: 28px; height: 28px;
   display: flex; align-items: center; justify-content: center;
   border: none; background: transparent;
-  border-radius: 5px; cursor: pointer;
-  color: var(--text-muted); font-size: 0.78rem;
+  border-radius: 6px; cursor: pointer;
+  color: var(--text-muted); font-size: 0.82rem;
   transition: all 0.15s;
 }
 .row-action-btn.edit-btn:hover { background: var(--accent-light); color: var(--accent); }
 .row-action-btn.delete-btn:hover { background: var(--danger-light); color: var(--danger); }
 
-/* ===== PHÂN TRANG (CỐ ĐỊNH Ở ĐÁY THẺ) ===== */
+/* ===== PHÂN TRANG (CHỈ NÚT BẤM SỐ TRANG) ===== */
 .panel-pagination {
   margin-top: auto;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  height: 44px;
+  height: 46px;
   padding: 0 12px;
   border-top: 1px solid var(--border-light);
   background: var(--bg-card);
@@ -432,40 +461,6 @@ body {
   font-size: 0.8rem;
   padding: 0 3px;
   user-select: none;
-}
-
-/* ===== SẮP XẾP TÙY CHỌN ===== */
-.sort-options-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.sort-option-btn {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--bg-input);
-  color: var(--text-primary);
-  font-size: 0.84rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
-  text-align: left;
-}
-.sort-option-btn:hover {
-  border-color: var(--accent);
-  background: var(--accent-light);
-  color: var(--accent);
-  transform: translateX(3px);
-}
-.sort-option-btn .sort-desc {
-  font-size: 0.72rem;
-  font-weight: 400;
-  color: var(--text-muted);
-  margin-top: 2px;
 }
 
 /* ===== MODAL ===== */
@@ -638,8 +633,8 @@ mark { background: #fef08a; color: inherit; border-radius: 2px; padding: 0 1px; 
     padding: 10px 8px 24px; gap: 10px;
   }
   .panel { height: auto; min-height: 440px; }
-  .panel-actions { padding: 6px 10px; gap: 4px; }
-  .account-row { padding: 7px 8px; margin: 2px 4px; }
+  .panel-actions { padding: 6px 10px; gap: 6px; }
+  .account-row { padding: 8px 10px; margin: 2px 4px; }
   .modal { max-width: 100%; }
 }
 

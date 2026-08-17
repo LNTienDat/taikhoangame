@@ -2,7 +2,7 @@ const App = (function() {
   'use strict';
 
   const TYPES = ['garena', 'gmail', 'facebook'];
-  const PAGE_SIZE = 10; // Mỗi trang hiển thị tối đa 10 tài khoản
+  const PAGE_SIZE = 7; // Mỗi trang hiển thị đúng 7 tài khoản
 
   const CONFIG = {
     garena: {
@@ -50,7 +50,8 @@ const App = (function() {
     garena: [], gmail: [], facebook: [],
     searchTerm: '',
     page: { garena: 1, gmail: 1, facebook: 1 },
-    sortModalType: null,
+    draggedId: null,
+    draggedType: null,
     importType: null, importData: null,
     exportType: null, addType: null,
     editType: null, editId: null
@@ -231,9 +232,11 @@ const App = (function() {
       pagEl.style.display = 'none';
       pagEl.innerHTML = '';
     }
+
+    setupDragAndDrop(type);
   }
 
-  // Dòng tài khoản dạng cột: [Tên trong game] | [Tên tài khoản (Garena/Gmail/FB)]
+  // Dòng tài khoản dạng cột: [⠿ Kéo thả] [Checkbox] [Tên trong game | Tên tài khoản] [✏️ 🗑️]
   function renderRow(type, acc) {
     const cfg = CONFIG[type];
     const term = state.searchTerm;
@@ -242,7 +245,8 @@ const App = (function() {
     const checkedCls = acc.daDangNhap ? 'checked' : '';
 
     return `
-    <div class="account-row ${checkedCls}" data-id="${acc.id}" data-type="${type}">
+    <div class="account-row ${checkedCls}" draggable="true" data-id="${acc.id}" data-type="${type}">
+      <div class="drag-handle" title="Kéo thả để sắp xếp thứ tự">⠿</div>
       <div class="custom-checkbox ${acc.daDangNhap ? 'is-checked' : ''}" onclick="App.toggleCheck('${type}','${acc.id}')" title="Đánh dấu đã đăng nhập">
         <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
@@ -258,39 +262,56 @@ const App = (function() {
     </div>`;
   }
 
-  // === SẮP XẾP THỨ TỰ (A-Z, Z-A, ĐẢO NGƯỢC) ===
-  function openSortModal(type) {
-    state.sortModalType = type;
-    document.getElementById('sortModalTitle').textContent = 'Sắp xếp ' + CONFIG[type].label;
-    openModal('sortModal');
-  }
+  // === KÉO THẢ SẮP XẾP THỨ TỰ (DRAG & DROP) ===
+  function setupDragAndDrop(type) {
+    const listEl = document.getElementById('list' + cap(type));
+    if (!listEl) return;
+    const rows = listEl.querySelectorAll('.account-row');
 
-  function applySort(mode) {
-    const type = state.sortModalType;
-    if (!type) return;
-    const cfg = CONFIG[type];
+    rows.forEach(row => {
+      row.addEventListener('dragstart', (e) => {
+        state.draggedId = row.dataset.id;
+        state.draggedType = row.dataset.type;
+        row.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', row.dataset.id);
+      });
 
-    if (mode === 'game-asc') {
-      state[type].sort((a, b) => (a.tenNhanVat || '').localeCompare(b.tenNhanVat || '', 'vi', { sensitivity: 'base' }));
-      toast('Đã xếp Tên trong game (A → Z)');
-    } else if (mode === 'game-desc') {
-      state[type].sort((a, b) => (b.tenNhanVat || '').localeCompare(a.tenNhanVat || '', 'vi', { sensitivity: 'base' }));
-      toast('Đã xếp Tên trong game (Z → A)');
-    } else if (mode === 'acc-asc') {
-      state[type].sort((a, b) => (a[cfg.mainField] || '').localeCompare(b[cfg.mainField] || '', 'vi', { sensitivity: 'base' }));
-      toast('Đã xếp Tên tài khoản (A → Z)');
-    } else if (mode === 'acc-desc') {
-      state[type].sort((a, b) => (b[cfg.mainField] || '').localeCompare(a[cfg.mainField] || '', 'vi', { sensitivity: 'base' }));
-      toast('Đã xếp Tên tài khoản (Z → A)');
-    } else if (mode === 'reverse') {
-      state[type].reverse();
-      toast('Đã đảo ngược danh sách');
-    }
+      row.addEventListener('dragend', () => {
+        row.classList.remove('dragging');
+        rows.forEach(r => r.classList.remove('drag-over'));
+      });
 
-    saveData(type);
-    state.page[type] = 1;
-    render(type);
-    closeModal('sortModal');
+      row.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        rows.forEach(r => r.classList.remove('drag-over'));
+        row.classList.add('drag-over');
+      });
+
+      row.addEventListener('drop', (e) => {
+        e.preventDefault();
+        row.classList.remove('drag-over');
+        const targetId = row.dataset.id;
+        const targetType = row.dataset.type;
+        const sourceId = state.draggedId;
+        const sourceType = state.draggedType;
+
+        if (!sourceId || !targetId || sourceId === targetId || sourceType !== targetType) return;
+
+        const arr = state[sourceType];
+        const fromIndex = arr.findIndex(a => a.id === sourceId);
+        const toIndex = arr.findIndex(a => a.id === targetId);
+
+        if (fromIndex !== -1 && toIndex !== -1) {
+          const [movedItem] = arr.splice(fromIndex, 1);
+          arr.splice(toIndex, 0, movedItem);
+          saveData(sourceType);
+          renderList(sourceType);
+          toast('Đã cập nhật vị trí tài khoản');
+        }
+      });
+    });
   }
 
   // === RESET SỰ KIỆN CHUNG (2 LẦN XÁC NHẬN) ===
@@ -557,7 +578,6 @@ const App = (function() {
     toggleCheck, deleteAccount,
     resetAllEvents, deleteAllAccounts,
     changePage,
-    openSortModal, applySort,
     openAddModal, submitAddForm,
     openEditModal, submitEditForm,
     openImportModal, previewImport, confirmImport,
