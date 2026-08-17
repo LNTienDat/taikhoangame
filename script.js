@@ -11,11 +11,10 @@ const App = (function() {
       label: 'Garena',
       fields: [
         { key: 'tenGarena', label: 'Tên tài khoản Garena', required: true },
-        { key: 'gmailDangKy', label: 'Gmail liên kết (dùng khi khôi phục)', required: false },
         { key: 'tenNhanVat', label: 'Tên nhân vật game', required: false }
       ],
-      importColumns: ['tenGarena', 'gmailDangKy', 'tenNhanVat'],
-      importHint: 'Tên Garena | Gmail liên kết | Tên nhân vật'
+      importColumns: ['tenGarena', 'tenNhanVat'],
+      importHint: 'Tên Garena | Tên nhân vật'
     },
     gmail: {
       storageKey: 'gmail_accounts',
@@ -505,10 +504,8 @@ const App = (function() {
     try {
       const snap = JSON.parse(raw);
       if (snap.accounts && Array.isArray(snap.accounts)) {
-        // Khôi phục chuẩn xác toàn bộ danh sách và vị trí lúc bạn lưu
         state[type] = JSON.parse(JSON.stringify(snap.accounts));
       } else if (snap.order && Array.isArray(snap.order)) {
-        // Tương thích với bản lưu ID
         const idMap = new Map();
         state[type].forEach(a => idMap.set(a.id, a));
         const reordered = [];
