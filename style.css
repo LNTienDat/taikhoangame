@@ -156,17 +156,18 @@ body {
   color: var(--danger);
 }
 
-/* ===== BỐ CỤC 3 CỘT ===== */
+/* ===== BỐ CỤC 3 CỘT (MỞ RỘNG XUỐNG ĐẦY ĐỦ KHÔNG GIAN MÀN HÌNH) ===== */
 .main {
   max-width: 1600px; margin: 0 auto;
-  padding: 14px 20px 24px;
+  padding: 14px 20px 20px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   align-items: stretch;
+  min-height: calc(100vh - 52px);
 }
 
-/* ===== PANEL ===== */
+/* ===== PANEL (MỞ RỘNG CAO HƠN, TỰ ĐỘNG THEO MÀN HÌNH) ===== */
 .panel {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -175,12 +176,14 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: 520px; /* Chiều cao chuẩn cố định */
+  height: calc(100vh - 86px);
+  min-height: 590px;
+  max-height: 760px;
   transition: background 0.3s, border-color 0.3s;
 }
 
 .panel-header {
-  padding: 12px 14px 10px;
+  padding: 14px 14px 10px;
   border-bottom: 1px solid var(--border-light);
   display: flex;
   flex-direction: column;
@@ -189,20 +192,20 @@ body {
   flex-shrink: 0;
 }
 .panel-header h2 {
-  font-size: 1.05rem; font-weight: 700;
+  font-size: 1.1rem; font-weight: 700;
   letter-spacing: -0.01em;
   margin-bottom: 6px;
   display: flex; align-items: center; justify-content: center;
   width: 100%;
 }
 .counters {
-  display: flex; gap: 5px; flex-wrap: wrap;
+  display: flex; gap: 6px; flex-wrap: wrap;
   justify-content: center;
   align-items: center;
 }
 .counter-badge {
-  font-size: 0.7rem; font-weight: 600;
-  padding: 2px 8px; border-radius: 20px;
+  font-size: 0.72rem; font-weight: 600;
+  padding: 3px 10px; border-radius: 20px;
   letter-spacing: 0.01em;
 }
 .counter-total { background: var(--bg-input); color: var(--text-secondary); }
@@ -213,7 +216,7 @@ body {
 
 /* Thanh 3 nút hành động */
 .panel-actions {
-  padding: 8px 12px;
+  padding: 10px 14px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
@@ -221,7 +224,7 @@ body {
   flex-shrink: 0;
 }
 .panel-action-btn {
-  height: 32px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -262,12 +265,12 @@ body {
 /* ===== NÚT CHUNG ===== */
 .btn {
   font-family: var(--font);
-  font-size: 0.78rem; font-weight: 600;
-  padding: 6px 14px;
+  font-size: 0.8rem; font-weight: 600;
+  padding: 7px 16px;
   border-radius: var(--radius-sm);
   border: 1.5px solid transparent;
   cursor: pointer;
-  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   transition: all 0.2s; white-space: nowrap;
 }
 .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
@@ -277,15 +280,16 @@ body {
 .btn-ghost:hover { background: var(--bg-input); color: var(--text-primary); }
 .btn-outline { background: transparent; color: var(--text-secondary); border-color: var(--border); }
 .btn-outline:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
-.btn-sm { padding: 4px 10px; font-size: 0.74rem; }
+.btn-sm { padding: 5px 12px; font-size: 0.75rem; }
 
-/* ===== DANH SÁCH TÀI KHOẢN (7 DÒNG MỖI TRANG) ===== */
+/* ===== DANH SÁCH TÀI KHOẢN (7 DÒNG MỞ RỘNG RỘNG RÃI) ===== */
 .account-list {
   flex: 1;
   overflow-y: auto;
-  padding: 6px 0;
+  padding: 8px 2px;
   display: flex;
   flex-direction: column;
+  gap: 4px;
 }
 .empty-state {
   flex: 1;
@@ -293,22 +297,22 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px 16px;
+  padding: 24px 16px;
   text-align: center;
   color: var(--text-muted);
 }
-.empty-state p { font-size: 0.84rem; line-height: 1.6; }
+.empty-state p { font-size: 0.88rem; line-height: 1.6; }
 
 /* Dòng tài khoản dạng Cột: [⠿] [Checkbox] [Tên game | Tên đăng nhập] [✏️ 🗑️] */
 .account-row {
   display: flex; align-items: center;
-  padding: 10px 12px 10px 10px;
-  margin: 3px 6px;
+  padding: 12px 14px 12px 10px;
+  margin: 2px 8px;
   border-radius: var(--radius-md);
   transition: background 0.15s, opacity 0.15s, transform 0.15s;
-  position: relative; gap: 8px;
+  position: relative; gap: 10px;
   animation: fadeIn 0.15s ease;
-  min-height: 42px;
+  min-height: 48px;
 }
 .account-row:hover { background: var(--bg-card-hover); }
 
@@ -316,9 +320,9 @@ body {
 .drag-handle {
   cursor: grab;
   color: var(--text-muted);
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   line-height: 1;
-  padding: 0 3px;
+  padding: 0 4px;
   user-select: none;
   display: flex;
   align-items: center;
@@ -361,7 +365,7 @@ body {
 .custom-checkbox.is-checked { background: var(--success); border-color: var(--success); }
 .custom-checkbox.is-checked svg { stroke: #fff; }
 .custom-checkbox svg {
-  width: 13px; height: 13px;
+  width: 14px; height: 14px;
   stroke: transparent; stroke-width: 3;
   fill: none; transition: stroke 0.15s;
 }
@@ -370,7 +374,7 @@ body {
 .account-cols {
   flex: 1; min-width: 0;
   display: flex; align-items: center;
-  gap: 8px; font-size: 0.86rem;
+  gap: 8px; font-size: 0.88rem;
 }
 .col-game {
   font-weight: 600;
@@ -386,14 +390,14 @@ body {
 }
 .col-acc {
   color: var(--text-secondary);
-  font-size: 0.84rem;
+  font-size: 0.85rem;
   word-break: break-all;
   flex: 1;
 }
 
 /* Nút hành động: Sửa & Xoá */
 .row-actions {
-  display: flex; align-items: center; gap: 2px;
+  display: flex; align-items: center; gap: 3px;
   flex-shrink: 0;
 }
 .row-action-btn {
@@ -407,14 +411,14 @@ body {
 .row-action-btn.edit-btn:hover { background: var(--accent-light); color: var(--accent); }
 .row-action-btn.delete-btn:hover { background: var(--danger-light); color: var(--danger); }
 
-/* ===== PHÂN TRANG (CHỈ NÚT BẤM SỐ TRANG) ===== */
+/* ===== PHÂN TRANG (CỐ ĐỊNH Ở ĐÁY THẺ) ===== */
 .panel-pagination {
   margin-top: auto;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  height: 46px;
+  height: 48px;
   padding: 0 12px;
   border-top: 1px solid var(--border-light);
   background: var(--bg-card);
@@ -426,8 +430,8 @@ body {
   gap: 4px;
 }
 .page-btn, .page-num-btn {
-  min-width: 28px;
-  height: 28px;
+  min-width: 30px;
+  height: 30px;
   padding: 0 6px;
   display: flex;
   align-items: center;
@@ -436,7 +440,7 @@ body {
   border-radius: var(--radius-sm);
   background: var(--bg-input);
   color: var(--text-primary);
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
@@ -621,7 +625,7 @@ mark { background: #fef08a; color: inherit; border-radius: 2px; padding: 0 1px; 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 1100px) {
   .main { grid-template-columns: repeat(2, 1fr); }
-  .panel { height: auto; min-height: 480px; }
+  .panel { height: auto; min-height: 520px; }
 }
 @media (max-width: 768px) {
   html { font-size: 13.5px; }
@@ -632,9 +636,9 @@ mark { background: #fef08a; color: inherit; border-radius: 2px; padding: 0 1px; 
     grid-template-columns: 1fr;
     padding: 10px 8px 24px; gap: 10px;
   }
-  .panel { height: auto; min-height: 440px; }
+  .panel { height: auto; min-height: 480px; }
   .panel-actions { padding: 6px 10px; gap: 6px; }
-  .account-row { padding: 8px 10px; margin: 2px 4px; }
+  .account-row { padding: 10px 10px; margin: 2px 4px; }
   .modal { max-width: 100%; }
 }
 
