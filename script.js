@@ -2,6 +2,7 @@ const App = (function() {
   'use strict';
 
   const TYPES = ['garena', 'gmail', 'facebook'];
+  const PAGE_SIZE = 10; // Mỗi trang hiển thị 10 tài khoản
 
   const CONFIG = {
     garena: {
@@ -48,6 +49,9 @@ const App = (function() {
   const state = {
     garena: [], gmail: [], facebook: [],
     searchTerm: '',
+    page: { garena: 1, gmail: 1, facebook: 1 },
+    manualSortMode: { garena: false, gmail: false, facebook: false },
+    sortModalType: null,
     importType: null, importData: null,
     exportType: null, addType: null,
     editType: null, editId: null
@@ -107,8 +111,10 @@ const App = (function() {
 
   // === CRUD ===
   function addAccount(type, data) {
-    state[type].push({ id: uuid(), daDangNhap: false, ...data });
-    saveData(type); render(type);
+    state[type].unshift({ id: uuid(), daDangNhap: false, ...data });
+    saveData(type);
+    state.page[type] = 1;
+    render(type);
     toast('Đã thêm tài khoản');
   }
   function addAccountSilent(type, data) {
@@ -131,7 +137,7 @@ const App = (function() {
     if (acc) { acc.daDangNhap = !acc.daDangNhap; saveData(type); render(type); }
   }
 
-  // === SẮP XẾP TỰ ĐỘNG ===
+  // === SẮP XẾP TỰ ĐỘNG (CHƯA TICK LÊN TRÊN, TICK RỒI XUỐNG DƯỚI) ===
   function getSorted(type) {
     const list = [...state[type]];
     list.sort((a, b) => {
@@ -141,8 +147,17 @@ const App = (function() {
     return list;
   }
 
+  // === PHÂN TRANG ===
+  function changePage(type, targetPage) {
+    state.page[type] = targetPage;
+    renderList(type);
+  }
+
   // === RENDER ===
-  function render(type) { renderList(type); renderCounters(type); }
+  function render(type) {
+    renderList(type);
+    renderCounters(type);
+  }
 
   function renderCounters(type) {
     const list = state[type];
@@ -155,18 +170,49 @@ const App = (function() {
 
   function renderList(type) {
     const listEl = document.getElementById('list' + cap(type));
+    const pagEl = document.getElementById('pagination' + cap(type));
     let sorted = getSorted(type);
     const term = state.searchTerm;
     if (term) {
       sorted = sorted.filter(acc => matchSearch(acc[CONFIG[type].mainField] || '', term));
     }
-    if (sorted.length === 0) {
+
+    const totalItems = sorted.length;
+    const totalPages = Math.ceil(totalItems / PAGE_SIZE) || 1;
+
+    if (state.page[type] > totalPages) state.page[type] = totalPages;
+    if (state.page[type] < 1) state.page[type] = 1;
+
+    const currentPage = state.page[type];
+
+    if (totalItems === 0) {
       listEl.innerHTML = `<div class="empty-state">
         <p>${term ? 'Không tìm thấy tài khoản phù hợp.' : 'Chưa có tài khoản nào.<br>Nhấn nút <b>+</b> để bắt đầu.'}</p>
       </div>`;
+      pagEl.innerHTML = '';
+      pagEl.style.display = 'none';
       return;
     }
-    listEl.innerHTML = sorted.map(acc => renderRow(type, acc)).join('');
+
+    const startIndex = (currentPage - 1) * PAGE_SIZE;
+    const pageItems = sorted.slice(startIndex, startIndex + PAGE_SIZE);
+
+    listEl.innerHTML = pageItems.map(acc => renderRow(type, acc)).join('');
+
+    // Render thanh phân trang
+    if (totalPages > 1) {
+      pagEl.style.display = 'flex';
+      pagEl.innerHTML = `
+        <button class="page-btn" onclick="App.changePage('${type}', 1)" ${currentPage === 1 ? 'disabled' : ''} title="Trang đầu">«</button>
+        <button class="page-btn" onclick="App.changePage('${type}', ${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} title="Trang trước">‹</button>
+        <span class="page-info-badge">${currentPage} / ${totalPages} (${totalItems} tk)</span>
+        <button class="page-btn" onclick="App.changePage('${type}', ${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} title="Trang sau">›</button>
+        <button class="page-btn" onclick="App.changePage('${type}', ${totalPages})" ${currentPage === totalPages ? 'disabled' : ''} title="Trang cuối">»</button>
+      `;
+    } else {
+      pagEl.style.display = 'flex';
+      pagEl.innerHTML = `<span class="page-info-badge" style="color:var(--text-muted)">Hiển thị ${totalItems} tài khoản</span>`;
+    }
   }
 
   // Dòng tài khoản dạng cột: [Tên trong game] | [Tên tài khoản (Garena/Gmail/FB)]
@@ -176,6 +222,12 @@ const App = (function() {
     const mainText = highlightText(acc[cfg.mainField] || '', term);
     const gameName = acc.tenNhanVat ? escapeHtml(acc.tenNhanVat) : '<span style="color:var(--text-muted)">—</span>';
     const checkedCls = acc.daDangNhap ? 'checked' : '';
+
+    const isManualSort = state.manualSortMode[type];
+    const moveButtons = isManualSort ? `
+      <button class="row-action-btn move-btn" onclick="App.moveAccount('${type}','${acc.id}','up')" title="Chuyển lên trên">▲</button>
+      <button class="row-action-btn move-btn" onclick="App.moveAccount('${type}','${acc.id}','down')" title="Chuyển xuống dưới">▼</button>
+    ` : '';
 
     return `
     <div class="account-row ${checkedCls}" data-id="${acc.id}" data-type="${type}">
@@ -188,10 +240,80 @@ const App = (function() {
         <span class="col-acc" title="Tên đăng nhập">${mainText}</span>
       </div>
       <div class="row-actions">
+        ${moveButtons}
         <button class="row-action-btn edit-btn" onclick="App.openEditModal('${type}','${acc.id}')" title="Sửa thông tin">✏️</button>
         <button class="row-action-btn delete-btn" onclick="App.deleteAccount('${type}','${acc.id}')" title="Xoá">🗑</button>
       </div>
     </div>`;
+  }
+
+  // === SẮP XẾP THỨ TỰ (COMPACT SORT) ===
+  function openSortModal(type) {
+    state.sortModalType = type;
+    document.getElementById('sortModalTitle').textContent = 'Sắp xếp ' + CONFIG[type].label;
+    const isManual = state.manualSortMode[type];
+    document.getElementById('manualSortTitle').textContent = isManual ? 'Tắt nút di chuyển dòng (▲ ▼)' : 'Bật nút di chuyển dòng (▲ ▼)';
+    document.getElementById('btnToggleManualSort').classList.toggle('active', isManual);
+    openModal('sortModal');
+  }
+
+  function applySort(mode) {
+    const type = state.sortModalType;
+    if (!type) return;
+    const cfg = CONFIG[type];
+
+    if (mode === 'game-asc') {
+      state[type].sort((a, b) => (a.tenNhanVat || '').localeCompare(b.tenNhanVat || '', 'vi', { sensitivity: 'base' }));
+      toast('Đã xếp Tên trong game (A → Z)');
+    } else if (mode === 'game-desc') {
+      state[type].sort((a, b) => (b.tenNhanVat || '').localeCompare(a.tenNhanVat || '', 'vi', { sensitivity: 'base' }));
+      toast('Đã xếp Tên trong game (Z → A)');
+    } else if (mode === 'acc-asc') {
+      state[type].sort((a, b) => (a[cfg.mainField] || '').localeCompare(b[cfg.mainField] || '', 'vi', { sensitivity: 'base' }));
+      toast('Đã xếp Tên tài khoản (A → Z)');
+    } else if (mode === 'acc-desc') {
+      state[type].sort((a, b) => (b[cfg.mainField] || '').localeCompare(a[cfg.mainField] || '', 'vi', { sensitivity: 'base' }));
+      toast('Đã xếp Tên tài khoản (Z → A)');
+    } else if (mode === 'reverse') {
+      state[type].reverse();
+      toast('Đã đảo ngược thứ tự danh sách');
+    }
+
+    saveData(type);
+    state.page[type] = 1;
+    render(type);
+    closeModal('sortModal');
+  }
+
+  function toggleManualSortMode() {
+    const type = state.sortModalType;
+    if (!type) return;
+    state.manualSortMode[type] = !state.manualSortMode[type];
+    const btnSort = document.getElementById('btnSort' + cap(type));
+    if (btnSort) btnSort.classList.toggle('active', state.manualSortMode[type]);
+    closeModal('sortModal');
+    renderList(type);
+    toast(state.manualSortMode[type] ? 'Đã bật nút chỉnh vị trí (▲ ▼)' : 'Đã tắt nút chỉnh vị trí');
+  }
+
+  function moveAccount(type, id, direction) {
+    const arr = state[type];
+    const idx = arr.findIndex(a => a.id === id);
+    if (idx === -1) return;
+
+    if (direction === 'up' && idx > 0) {
+      const temp = arr[idx];
+      arr[idx] = arr[idx - 1];
+      arr[idx - 1] = temp;
+      saveData(type);
+      renderList(type);
+    } else if (direction === 'down' && idx < arr.length - 1) {
+      const temp = arr[idx];
+      arr[idx] = arr[idx + 1];
+      arr[idx + 1] = temp;
+      saveData(type);
+      renderList(type);
+    }
   }
 
   // === RESET SỰ KIỆN CHUNG (2 LẦN XÁC NHẬN) ===
@@ -434,7 +556,10 @@ const App = (function() {
       clearTimeout(timer);
       timer = setTimeout(() => {
         state.searchTerm = input.value.trim();
-        TYPES.forEach(t => render(t));
+        TYPES.forEach(t => {
+          state.page[t] = 1;
+          render(t);
+        });
       }, 200);
     });
   }
@@ -454,6 +579,8 @@ const App = (function() {
   return {
     toggleCheck, deleteAccount,
     resetAllEvents, deleteAllAccounts,
+    changePage,
+    openSortModal, applySort, toggleManualSortMode, moveAccount,
     openAddModal, submitAddForm,
     openEditModal, submitEditForm,
     openImportModal, previewImport, confirmImport,

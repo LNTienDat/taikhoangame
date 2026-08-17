@@ -67,8 +67,12 @@
       <button class="panel-action-btn" onclick="App.openImportModal('garena')" title="Nhập dữ liệu từ Excel (Import)">
         <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
       </button>
+      <button class="panel-action-btn" id="btnSortGarena" onclick="App.openSortModal('garena')" title="Sắp xếp thứ tự tài khoản">
+        <svg viewBox="0 0 24 24"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path><path d="M12 4v16"></path></svg>
+      </button>
     </div>
     <div class="account-list" id="listGarena"></div>
+    <div class="panel-pagination" id="paginationGarena"></div>
   </section>
 
   <!-- GMAIL -->
@@ -87,8 +91,12 @@
       <button class="panel-action-btn" onclick="App.openImportModal('gmail')" title="Nhập dữ liệu từ Excel (Import)">
         <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
       </button>
+      <button class="panel-action-btn" id="btnSortGmail" onclick="App.openSortModal('gmail')" title="Sắp xếp thứ tự tài khoản">
+        <svg viewBox="0 0 24 24"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path><path d="M12 4v16"></path></svg>
+      </button>
     </div>
     <div class="account-list" id="listGmail"></div>
+    <div class="panel-pagination" id="paginationGmail"></div>
   </section>
 
   <!-- FACEBOOK -->
@@ -107,8 +115,12 @@
       <button class="panel-action-btn" onclick="App.openImportModal('facebook')" title="Nhập dữ liệu từ Excel (Import)">
         <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
       </button>
+      <button class="panel-action-btn" id="btnSortFacebook" onclick="App.openSortModal('facebook')" title="Sắp xếp thứ tự tài khoản">
+        <svg viewBox="0 0 24 24"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"></path><path d="M12 4v16"></path></svg>
+      </button>
     </div>
     <div class="account-list" id="listFacebook"></div>
+    <div class="panel-pagination" id="paginationFacebook"></div>
   </section>
 </main>
 
@@ -146,6 +158,62 @@
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="App.closeModal('editModal')">Huỷ</button>
       <button class="btn btn-primary" onclick="App.submitEditForm()">Lưu thay đổi</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: SẮP XẾP THỨ TỰ (NHỎ GỌN) -->
+<div class="modal-overlay" id="sortModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header">
+      <h3 id="sortModalTitle">Sắp xếp thứ tự</h3>
+      <button class="btn-close" onclick="App.closeModal('sortModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="sort-options-list">
+        <button class="sort-option-btn" onclick="App.applySort('game-asc')">
+          <div>
+            <div>Tên trong game (A → Z)</div>
+            <div class="sort-desc">Xếp theo thứ tự chữ cái tên nhân vật</div>
+          </div>
+          <span>🔤</span>
+        </button>
+        <button class="sort-option-btn" onclick="App.applySort('game-desc')">
+          <div>
+            <div>Tên trong game (Z → A)</div>
+            <div class="sort-desc">Xếp ngược thứ tự chữ cái tên nhân vật</div>
+          </div>
+          <span>🔤</span>
+        </button>
+        <button class="sort-option-btn" onclick="App.applySort('acc-asc')">
+          <div>
+            <div>Tên đăng nhập (A → Z)</div>
+            <div class="sort-desc">Xếp theo thứ tự chữ cái tên tài khoản</div>
+          </div>
+          <span>🔤</span>
+        </button>
+        <button class="sort-option-btn" onclick="App.applySort('acc-desc')">
+          <div>
+            <div>Tên đăng nhập (Z → A)</div>
+            <div class="sort-desc">Xếp ngược thứ tự chữ cái tên tài khoản</div>
+          </div>
+          <span>🔤</span>
+        </button>
+        <button class="sort-option-btn" onclick="App.applySort('reverse')">
+          <div>
+            <div>Đảo ngược thứ tự</div>
+            <div class="sort-desc">Đảo chiều toàn bộ danh sách hiện tại</div>
+          </div>
+          <span>🔃</span>
+        </button>
+        <button class="sort-option-btn" id="btnToggleManualSort" onclick="App.toggleManualSortMode()">
+          <div>
+            <div id="manualSortTitle">Bật nút di chuyển dòng (▲ ▼)</div>
+            <div class="sort-desc">Hiện nút lên/xuống trực tiếp trên mỗi dòng</div>
+          </div>
+          <span id="manualSortIcon">⇅</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>

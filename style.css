@@ -207,12 +207,12 @@ body {
 [data-theme="dark"] .counter-remaining { background: #422006; color: #fbbf24; }
 [data-theme="dark"] .counter-done { background: #064e3b; color: #6ee7b7; }
 
-/* Thanh 3 nút hành động */
+/* Thanh 4 nút hành động */
 .panel-actions {
   padding: 10px 16px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
   border-bottom: 1px solid var(--border-light);
 }
 .panel-action-btn {
@@ -228,8 +228,8 @@ body {
   transition: all 0.2s;
 }
 .panel-action-btn svg {
-  width: 17px;
-  height: 17px;
+  width: 16px;
+  height: 16px;
   stroke: currentColor;
   stroke-width: 2.2;
   fill: none;
@@ -252,6 +252,11 @@ body {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
   color: #ffffff;
+}
+.panel-action-btn.active {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 /* ===== NÚT CHUNG ===== */
@@ -276,8 +281,9 @@ body {
 
 /* ===== DANH SÁCH TÀI KHOẢN ===== */
 .account-list {
-  flex: 1; overflow-y: auto;
-  max-height: 65vh; padding: 6px 0;
+  flex: 1;
+  min-height: 280px;
+  padding: 6px 0;
 }
 .empty-state {
   padding: 44px 18px;
@@ -291,7 +297,7 @@ body {
   padding: 10px 14px 10px 12px;
   margin: 3px 6px;
   border-radius: var(--radius-md);
-  transition: background 0.25s, opacity 0.3s, transform 0.2s;
+  transition: background 0.2s, opacity 0.2s, transform 0.15s;
   position: relative; gap: 10px;
   animation: fadeIn 0.2s ease;
 }
@@ -347,7 +353,7 @@ body {
   flex: 1;
 }
 
-/* Nút hành động: Sửa & Xoá */
+/* Nút hành động: Di chuyển / Sửa & Xoá */
 .row-actions {
   display: flex; align-items: center; gap: 2px;
   flex-shrink: 0;
@@ -360,8 +366,85 @@ body {
   color: var(--text-muted); font-size: 0.82rem;
   transition: all 0.15s;
 }
+.row-action-btn.move-btn:hover { background: var(--bg-input); color: var(--text-primary); }
 .row-action-btn.edit-btn:hover { background: var(--accent-light); color: var(--accent); }
 .row-action-btn.delete-btn:hover { background: var(--danger-light); color: var(--danger); }
+
+/* ===== PHÂN TRANG (PAGINATION) ===== */
+.panel-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border-light);
+  background: var(--bg-card);
+}
+.page-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.page-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+}
+.page-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+.page-info-badge {
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 0 8px;
+  user-select: none;
+}
+
+/* ===== SẮP XẾP TÙY CHỌN ===== */
+.sort-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sort-option-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-input);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+}
+.sort-option-btn:hover {
+  border-color: var(--accent);
+  background: var(--accent-light);
+  color: var(--accent);
+  transform: translateX(3px);
+}
+.sort-option-btn .sort-desc {
+  font-size: 0.74rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
 
 /* ===== MODAL ===== */
 .modal-overlay {
@@ -531,12 +614,11 @@ mark { background: #fef08a; color: inherit; border-radius: 2px; padding: 0 1px; 
     grid-template-columns: 1fr;
     padding: 10px 8px 30px; gap: 12px;
   }
-  .panel-actions { padding: 8px 12px; gap: 6px; }
+  .panel-actions { padding: 8px 12px; gap: 4px; }
   .account-row { padding: 10px 10px 10px 8px; margin: 2px 4px; }
-  .account-list { max-height: 50vh; }
   .modal { max-width: 100%; }
-  .row-action-btn { width: 30px; height: 30px; }
-  .custom-checkbox { width: 26px; height: 26px; }
+  .row-action-btn { width: 28px; height: 28px; }
+  .custom-checkbox { width: 24px; height: 24px; }
 }
 
 /* ===== HIỆU ỨNG ===== */
