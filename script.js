@@ -53,6 +53,7 @@ const App = (function() {
     draggedId: null,
     draggedType: null,
     pageHoverTimer: null,
+    snapshotType: null,
     importType: null, importData: null,
     exportType: null, addType: null,
     editType: null, editId: null
@@ -327,7 +328,7 @@ const App = (function() {
         e.dataTransfer.dropEffect = 'move';
         btn.classList.add('drag-target-hover');
 
-        // Tự động lật sang trang đó sau 450ms rê chuột để người dùng thả chính xác vào vị trí mong muốn
+        // Tự động lật sang trang đó sau 450ms rê chuột
         if (!state.pageHoverTimer && state.page[type] !== targetPage) {
           state.pageHoverTimer = setTimeout(() => {
             state.page[type] = targetPage;
@@ -368,6 +369,83 @@ const App = (function() {
         toast(`Đã chuyển tài khoản sang Trang ${targetPage}`);
       });
     });
+  }
+
+  // === SAO LƯU & KHÔI PHỤC VỊ TRÍ SẮP XẾP (SNAPSHOT) ===
+  function openSnapshotModal(type) {
+    state.snapshotType = type;
+    const cfg = CONFIG[type];
+    document.getElementById('snapshotModalTitle').textContent = 'Vị trí tài khoản ' + cfg.label;
+
+    const snapKey = type + '_order_snapshot';
+    const raw = localStorage.getItem(snapKey);
+    const restoreCard = document.getElementById('btnRestoreSnapshot');
+    const timeEl = document.getElementById('snapshotStatusTime');
+
+    if (raw) {
+      try {
+        const snap = JSON.parse(raw);
+        timeEl.textContent = `${snap.time} (${snap.count || snap.order.length} tk)`;
+        restoreCard.classList.remove('disabled');
+      } catch {
+        timeEl.textContent = 'Chưa có bản lưu';
+        restoreCard.classList.add('disabled');
+      }
+    } else {
+      timeEl.textContent = 'Chưa có bản lưu';
+      restoreCard.classList.add('disabled');
+    }
+
+    openModal('snapshotModal');
+  }
+
+  function saveOrderSnapshot() {
+    const type = state.snapshotType;
+    if (!type) return;
+    const cfg = CONFIG[type];
+    const snap = {
+      time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' - ' + new Date().toLocaleDateString('vi-VN'),
+      count: state[type].length,
+      order: state[type].map(a => a.id)
+    };
+    localStorage.setItem(type + '_order_snapshot', JSON.stringify(snap));
+    closeModal('snapshotModal');
+    toast(`Đã sao lưu vị trí chuẩn của ${cfg.label}!`);
+  }
+
+  function restoreOrderSnapshot() {
+    const type = state.snapshotType;
+    if (!type) return;
+    const snapKey = type + '_order_snapshot';
+    const raw = localStorage.getItem(snapKey);
+    if (!raw) {
+      toast('Chưa có bản sao lưu vị trí nào');
+      return;
+    }
+
+    try {
+      const snap = JSON.parse(raw);
+      const idMap = new Map();
+      state[type].forEach(a => idMap.set(a.id, a));
+
+      const reordered = [];
+      snap.order.forEach(id => {
+        if (idMap.has(id)) {
+          reordered.push(idMap.get(id));
+          idMap.delete(id);
+        }
+      });
+      // Những tài khoản mới thêm vào sau bản lưu thì giữ ở cuối
+      idMap.forEach(a => reordered.push(a));
+
+      state[type] = reordered;
+      saveData(type);
+      render(type);
+      closeModal('snapshotModal');
+      toast(`Đã khôi phục về vị trí lưu lúc ${snap.time}!`);
+    } catch {
+      toast('Lỗi khi khôi phục dữ liệu bản lưu');
+    }
   }
 
   // === RESET SỰ KIỆN CHUNG (2 LẦN XÁC NHẬN) ===
@@ -668,6 +746,7 @@ const App = (function() {
     toggleCheck, deleteAccount,
     resetAllEvents, deleteAllAccounts,
     changePage,
+    openSnapshotModal, saveOrderSnapshot, restoreOrderSnapshot,
     openAddModal, submitAddForm,
     openEditModal, submitEditForm,
     openImportModal, previewImport, confirmImport,

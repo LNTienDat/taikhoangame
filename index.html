@@ -41,7 +41,7 @@
           <path d="M3 3v5h5"></path>
         </svg>
       </button>
-      <button class="header-icon-btn" id="themeToggle" title="Đổi giao diện sáng/tối">
+      <button class="header-icon-btn btn-theme" id="themeToggle" title="Đổi giao diện sáng/tối">
         <!-- Icon chèn qua JS -->
       </button>
     </div>
@@ -67,6 +67,9 @@
       <button class="panel-action-btn" onclick="App.openImportModal('garena')" title="Nhập dữ liệu từ Excel (Import)">
         <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
       </button>
+      <button class="panel-action-btn btn-bookmark" onclick="App.openSnapshotModal('garena')" title="Sao lưu / Khôi phục vị trí sắp xếp">
+        <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+      </button>
     </div>
     <div class="account-list" id="listGarena"></div>
     <div class="panel-pagination" id="paginationGarena"></div>
@@ -88,6 +91,9 @@
       <button class="panel-action-btn" onclick="App.openImportModal('gmail')" title="Nhập dữ liệu từ Excel (Import)">
         <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
       </button>
+      <button class="panel-action-btn btn-bookmark" onclick="App.openSnapshotModal('gmail')" title="Sao lưu / Khôi phục vị trí sắp xếp">
+        <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+      </button>
     </div>
     <div class="account-list" id="listGmail"></div>
     <div class="panel-pagination" id="paginationGmail"></div>
@@ -108,6 +114,9 @@
       </button>
       <button class="panel-action-btn" onclick="App.openImportModal('facebook')" title="Nhập dữ liệu từ Excel (Import)">
         <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+      </button>
+      <button class="panel-action-btn btn-bookmark" onclick="App.openSnapshotModal('facebook')" title="Sao lưu / Khôi phục vị trí sắp xếp">
+        <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
       </button>
     </div>
     <div class="account-list" id="listFacebook"></div>
@@ -149,6 +158,38 @@
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="App.closeModal('editModal')">Huỷ</button>
       <button class="btn btn-primary" onclick="App.submitEditForm()">Lưu thay đổi</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: SAO LƯU & KHÔI PHỤC VỊ TRÍ (SNAPSHOT) -->
+<div class="modal-overlay" id="snapshotModal">
+  <div class="modal" style="max-width:440px">
+    <div class="modal-header">
+      <h3 id="snapshotModalTitle">Sao lưu & Khôi phục vị trí</h3>
+      <button class="btn-close" onclick="App.closeModal('snapshotModal')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="snapshot-status-box">
+        <span class="snapshot-status-label">Bản lưu gần nhất:</span>
+        <span class="snapshot-status-time" id="snapshotStatusTime">Chưa có</span>
+      </div>
+      <div class="snapshot-options-grid">
+        <div class="snapshot-action-card card-save" onclick="App.saveOrderSnapshot()">
+          <div class="snapshot-card-icon">💾</div>
+          <div class="snapshot-card-content">
+            <h4>Sao lưu vị trí hiện tại</h4>
+            <p>Ghi nhớ thứ tự sắp xếp hiện tại làm chuẩn</p>
+          </div>
+        </div>
+        <div class="snapshot-action-card card-restore" id="btnRestoreSnapshot" onclick="App.restoreOrderSnapshot()">
+          <div class="snapshot-card-icon">⏪</div>
+          <div class="snapshot-card-content">
+            <h4>Khôi phục vị trí đã lưu</h4>
+            <p>Xếp lại danh sách về đúng thứ tự chuẩn bạn đã lưu</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
