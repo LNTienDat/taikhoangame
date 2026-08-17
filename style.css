@@ -69,7 +69,7 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-/* ===== HEADER (Thanh Search căn giữa) ===== */
+/* ===== HEADER (Thanh Search căn giữa & 3 Nút Nổi Bật) ===== */
 .header {
   position: sticky; top: 0; z-index: 100;
   background: var(--bg-header);
@@ -82,7 +82,7 @@ body {
   max-width: 1600px; margin: 0 auto;
   display: flex; align-items: center; justify-content: center;
   position: relative;
-  height: 52px;
+  height: 56px;
 }
 .search-box {
   width: 100%;
@@ -96,7 +96,7 @@ body {
   color: var(--text-muted); pointer-events: none;
 }
 .search-box input {
-  width: 100%; height: 36px;
+  width: 100%; height: 38px;
   padding: 0 14px 0 38px;
   border: 1.5px solid var(--border);
   border-radius: 20px;
@@ -112,51 +112,107 @@ body {
   background: var(--bg-card);
 }
 
+/* 3 NÚT NỔI BẬT GÓC TRÊN PHẢI */
 .header-actions {
   position: absolute;
   right: 0;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 .header-icon-btn {
-  width: 34px;
-  height: 34px;
+  width: 38px;
+  height: 38px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid var(--border);
   border-radius: 50%;
-  background: var(--bg-input);
   cursor: pointer;
-  color: var(--text-secondary);
-  transition: all 0.2s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
 }
 .header-icon-btn svg {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   stroke: currentColor;
   fill: none;
+  stroke-width: 2.2;
 }
 .header-icon-btn:hover {
-  border-color: var(--accent);
-  background: var(--accent-light);
-  color: var(--accent);
-  transform: translateY(-1px);
-}
-.header-icon-btn.btn-reset:hover {
-  border-color: var(--warning);
-  background: rgba(245, 158, 11, 0.12);
-  color: var(--warning);
-}
-.header-icon-btn.btn-delete-all:hover {
-  border-color: var(--danger);
-  background: rgba(239, 68, 68, 0.12);
-  color: var(--danger);
+  transform: translateY(-2px) scale(1.06);
 }
 
-/* ===== BỐ CỤC 3 CỘT (MỞ RỘNG XUỐNG ĐẦY ĐỦ KHÔNG GIAN MÀN HÌNH) ===== */
+/* Nút Xoá tất cả: Đỏ nổi bật */
+.header-icon-btn.btn-delete-all {
+  background: #fee2e2;
+  border: 1.5px solid #fca5a5;
+  color: #dc2626;
+}
+.header-icon-btn.btn-delete-all:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4);
+}
+[data-theme="dark"] .header-icon-btn.btn-delete-all {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+[data-theme="dark"] .header-icon-btn.btn-delete-all:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: #ffffff;
+}
+
+/* Nút Reset sự kiện: Cam / Hổ phách nổi bật */
+.header-icon-btn.btn-reset {
+  background: #fef3c7;
+  border: 1.5px solid #fcd34d;
+  color: #d97706;
+}
+.header-icon-btn.btn-reset:hover {
+  background: #d97706;
+  border-color: #d97706;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.4);
+}
+[data-theme="dark"] .header-icon-btn.btn-reset {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+}
+[data-theme="dark"] .header-icon-btn.btn-reset:hover {
+  background: #f59e0b;
+  border-color: #f59e0b;
+  color: #ffffff;
+}
+
+/* Nút Đổi Theme: Xanh Dương nổi bật */
+.header-icon-btn.btn-theme {
+  background: #dbeafe;
+  border: 1.5px solid #93c5fd;
+  color: #2563eb;
+}
+.header-icon-btn.btn-theme:hover {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+}
+[data-theme="dark"] .header-icon-btn.btn-theme {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #60a5fa;
+}
+[data-theme="dark"] .header-icon-btn.btn-theme:hover {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #ffffff;
+}
+
+/* ===== BỐ CỤC 3 CỘT ===== */
 .main {
   max-width: 1600px; margin: 0 auto;
   padding: 14px 20px 20px;
@@ -164,10 +220,10 @@ body {
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   align-items: stretch;
-  min-height: calc(100vh - 52px);
+  min-height: calc(100vh - 56px);
 }
 
-/* ===== PANEL (MỞ RỘNG CAO HƠN, TỰ ĐỘNG THEO MÀN HÌNH) ===== */
+/* ===== PANEL ===== */
 .panel {
   background: var(--bg-card);
   border: 1px solid var(--border);
@@ -176,7 +232,7 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 86px);
+  height: calc(100vh - 90px);
   min-height: 590px;
   max-height: 760px;
   transition: background 0.3s, border-color 0.3s;
@@ -282,7 +338,7 @@ body {
 .btn-outline:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
 .btn-sm { padding: 5px 12px; font-size: 0.75rem; }
 
-/* ===== DANH SÁCH TÀI KHOẢN (7 DÒNG MỞ RỘNG RỘNG RÃI) ===== */
+/* ===== DANH SÁCH TÀI KHOẢN (7 DÒNG MỖI TRANG) ===== */
 .account-list {
   flex: 1;
   overflow-y: auto;
@@ -411,7 +467,7 @@ body {
 .row-action-btn.edit-btn:hover { background: var(--accent-light); color: var(--accent); }
 .row-action-btn.delete-btn:hover { background: var(--danger-light); color: var(--danger); }
 
-/* ===== PHÂN TRANG (CỐ ĐỊNH Ở ĐÁY THẺ) ===== */
+/* ===== PHÂN TRANG & KÉO THẢ SANG TRANG KHÁC ===== */
 .panel-pagination {
   margin-top: auto;
   display: flex;
@@ -455,6 +511,13 @@ body {
   border-color: var(--accent);
   color: #ffffff;
   font-weight: 700;
+}
+.page-num-btn.drag-target-hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: scale(1.25);
+  box-shadow: 0 0 12px rgba(37, 99, 235, 0.4);
 }
 .page-btn:disabled {
   opacity: 0.25;
@@ -515,6 +578,7 @@ body {
 }
 .form-group label .required { color: var(--danger); margin-left: 2px; }
 .form-group input[type="text"],
+.form-group select,
 .import-textarea {
   width: 100%; font-family: var(--font); font-size: 0.84rem;
   padding: 8px 12px; border: 1.5px solid var(--border);
@@ -523,6 +587,7 @@ body {
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 .form-group input[type="text"]:focus,
+.form-group select:focus,
 .import-textarea:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
@@ -631,7 +696,7 @@ mark { background: #fef08a; color: inherit; border-radius: 2px; padding: 0 1px; 
   html { font-size: 13.5px; }
   .header { padding: 0 12px; }
   .header-inner { justify-content: flex-start; }
-  .search-box { max-width: calc(100% - 120px); }
+  .search-box { max-width: calc(100% - 130px); }
   .main {
     grid-template-columns: 1fr;
     padding: 10px 8px 24px; gap: 10px;

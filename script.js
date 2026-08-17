@@ -41,9 +41,9 @@ const App = (function() {
     }
   };
 
-  const SUN_ICON = `<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+  const SUN_ICON = `<svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
 
-  const MOON_ICON = `<svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+  const MOON_ICON = `<svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
 
   // === STATE ===
   const state = {
@@ -52,6 +52,7 @@ const App = (function() {
     page: { garena: 1, gmail: 1, facebook: 1 },
     draggedId: null,
     draggedType: null,
+    pageHoverTimer: null,
     importType: null, importData: null,
     exportType: null, addType: null,
     editType: null, editId: null
@@ -207,20 +208,20 @@ const App = (function() {
       if (totalPages <= 6) {
         for (let i = 1; i <= totalPages; i++) {
           const activeCls = i === currentPage ? 'active' : '';
-          pagesHtml += `<button class="page-num-btn ${activeCls}" onclick="App.changePage('${type}', ${i})">${i}</button>`;
+          pagesHtml += `<button class="page-num-btn ${activeCls}" data-page="${i}" onclick="App.changePage('${type}', ${i})">${i}</button>`;
         }
       } else {
-        pagesHtml += `<button class="page-num-btn ${currentPage === 1 ? 'active' : ''}" onclick="App.changePage('${type}', 1)">1</button>`;
+        pagesHtml += `<button class="page-num-btn ${currentPage === 1 ? 'active' : ''}" data-page="1" onclick="App.changePage('${type}', 1)">1</button>`;
         if (currentPage > 3) pagesHtml += `<span class="page-dots">…</span>`;
 
         const start = Math.max(2, currentPage - 1);
         const end = Math.min(totalPages - 1, currentPage + 1);
         for (let i = start; i <= end; i++) {
-          pagesHtml += `<button class="page-num-btn ${i === currentPage ? 'active' : ''}" onclick="App.changePage('${type}', ${i})">${i}</button>`;
+          pagesHtml += `<button class="page-num-btn ${i === currentPage ? 'active' : ''}" data-page="${i}" onclick="App.changePage('${type}', ${i})">${i}</button>`;
         }
 
         if (currentPage < totalPages - 2) pagesHtml += `<span class="page-dots">…</span>`;
-        pagesHtml += `<button class="page-num-btn ${currentPage === totalPages ? 'active' : ''}" onclick="App.changePage('${type}', ${totalPages})">${totalPages}</button>`;
+        pagesHtml += `<button class="page-num-btn ${currentPage === totalPages ? 'active' : ''}" data-page="${totalPages}" onclick="App.changePage('${type}', ${totalPages})">${totalPages}</button>`;
       }
 
       pagEl.innerHTML = `
@@ -246,7 +247,7 @@ const App = (function() {
 
     return `
     <div class="account-row ${checkedCls}" draggable="true" data-id="${acc.id}" data-type="${type}">
-      <div class="drag-handle" title="Kéo thả để sắp xếp thứ tự">⠿</div>
+      <div class="drag-handle" title="Kéo thả dòng hoặc kéo vào số trang để đổi trang">⠿</div>
       <div class="custom-checkbox ${acc.daDangNhap ? 'is-checked' : ''}" onclick="App.toggleCheck('${type}','${acc.id}')" title="Đánh dấu đã đăng nhập">
         <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
@@ -262,12 +263,14 @@ const App = (function() {
     </div>`;
   }
 
-  // === KÉO THẢ SẮP XẾP THỨ TỰ (DRAG & DROP) ===
+  // === KÉO THẢ SẮP XẾP THỨ TỰ & KÉO SANG TRANG KHÁC ===
   function setupDragAndDrop(type) {
-    const listEl = document.getElementById('list' + cap(type));
-    if (!listEl) return;
-    const rows = listEl.querySelectorAll('.account-row');
+    const panelEl = document.getElementById('panel' + cap(type));
+    if (!panelEl) return;
+    const rows = panelEl.querySelectorAll('.account-row');
+    const pageButtons = panelEl.querySelectorAll('.page-num-btn');
 
+    // 1. Kéo thả giữa các dòng trong trang hiện tại
     rows.forEach(row => {
       row.addEventListener('dragstart', (e) => {
         state.draggedId = row.dataset.id;
@@ -280,6 +283,8 @@ const App = (function() {
       row.addEventListener('dragend', () => {
         row.classList.remove('dragging');
         rows.forEach(r => r.classList.remove('drag-over'));
+        pageButtons.forEach(btn => btn.classList.remove('drag-target-hover'));
+        clearTimeout(state.pageHoverTimer);
       });
 
       row.addEventListener('dragover', (e) => {
@@ -310,6 +315,57 @@ const App = (function() {
           renderList(sourceType);
           toast('Đã cập nhật vị trí tài khoản');
         }
+      });
+    });
+
+    // 2. KÉO THẢ TRỰC TIẾP VÀO NÚT SỐ TRANG ĐỂ CHUYỂN TRANG
+    pageButtons.forEach(btn => {
+      const targetPage = parseInt(btn.dataset.page, 10);
+
+      btn.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        btn.classList.add('drag-target-hover');
+
+        // Tự động lật sang trang đó sau 450ms rê chuột để người dùng thả chính xác vào vị trí mong muốn
+        if (!state.pageHoverTimer && state.page[type] !== targetPage) {
+          state.pageHoverTimer = setTimeout(() => {
+            state.page[type] = targetPage;
+            renderList(type);
+            toast(`Đang ở Trang ${targetPage}`);
+          }, 450);
+        }
+      });
+
+      btn.addEventListener('dragleave', () => {
+        btn.classList.remove('drag-target-hover');
+        clearTimeout(state.pageHoverTimer);
+        state.pageHoverTimer = null;
+      });
+
+      btn.addEventListener('drop', (e) => {
+        e.preventDefault();
+        btn.classList.remove('drag-target-hover');
+        clearTimeout(state.pageHoverTimer);
+        state.pageHoverTimer = null;
+
+        const sourceId = state.draggedId;
+        const sourceType = state.draggedType;
+        if (!sourceId || sourceType !== type) return;
+
+        const arr = state[type];
+        const fromIndex = arr.findIndex(a => a.id === sourceId);
+        if (fromIndex === -1) return;
+
+        // Chuyển tài khoản vào đầu trang mục tiêu
+        const targetIndex = (targetPage - 1) * PAGE_SIZE;
+        const [movedItem] = arr.splice(fromIndex, 1);
+        arr.splice(targetIndex, 0, movedItem);
+
+        saveData(type);
+        state.page[type] = targetPage;
+        renderList(type);
+        toast(`Đã chuyển tài khoản sang Trang ${targetPage}`);
       });
     });
   }
@@ -382,15 +438,23 @@ const App = (function() {
     return false;
   }
 
-  // === MODAL: SỬA ===
+  // === MODAL: SỬA & CHỌN TRANG ===
   function openEditModal(type, id) {
     const acc = state[type].find(a => a.id === id);
     if (!acc) return;
     state.editType = type;
     state.editId = id;
     const cfg = CONFIG[type];
-    document.getElementById('editModalTitle').textContent = 'Sửa tài khoản ' + cfg.label;
-    document.getElementById('editFormFields').innerHTML = cfg.fields.map(f => {
+    const totalPages = Math.ceil(state[type].length / PAGE_SIZE) || 1;
+    const currentAccIndex = state[type].findIndex(a => a.id === id);
+    const currentAccPage = Math.floor(currentAccIndex / PAGE_SIZE) + 1;
+
+    let pageOptions = '';
+    for (let p = 1; p <= totalPages; p++) {
+      pageOptions += `<option value="${p}" ${p === currentAccPage ? 'selected' : ''}>Trang ${p}</option>`;
+    }
+
+    let fieldsHtml = cfg.fields.map(f => {
       const val = escapeHtml(acc[f.key] || '');
       return `
       <div class="form-group">
@@ -398,6 +462,17 @@ const App = (function() {
         <input type="text" id="editField_${f.key}" value="${val}" ${f.required ? 'required' : ''}>
       </div>`;
     }).join('');
+
+    if (totalPages > 1) {
+      fieldsHtml += `
+      <div class="form-group">
+        <label>Chuyển đến Trang</label>
+        <select id="editField_page" class="form-select">${pageOptions}</select>
+      </div>`;
+    }
+
+    document.getElementById('editModalTitle').textContent = 'Sửa tài khoản ' + cfg.label;
+    document.getElementById('editFormFields').innerHTML = fieldsHtml;
     openModal('editModal');
     setTimeout(() => {
       const el = document.getElementById('editField_' + cfg.fields[0].key);
@@ -415,6 +490,20 @@ const App = (function() {
       if (f.required && !v) { toast(`Vui lòng nhập ${f.label}`); el.focus(); return false; }
       updates[f.key] = v;
     }
+
+    const pageSelect = document.getElementById('editField_page');
+    if (pageSelect) {
+      const targetPage = parseInt(pageSelect.value, 10);
+      const arr = state[type];
+      const fromIndex = arr.findIndex(a => a.id === id);
+      if (fromIndex !== -1) {
+        const targetIndex = (targetPage - 1) * PAGE_SIZE;
+        const [movedItem] = arr.splice(fromIndex, 1);
+        arr.splice(targetIndex, 0, movedItem);
+        state.page[type] = targetPage;
+      }
+    }
+
     updateAccount(type, id, updates);
     closeModal('editModal');
     toast('Đã cập nhật thông tin');
@@ -537,6 +626,7 @@ const App = (function() {
     if (btn) {
       btn.innerHTML = t === 'dark' ? SUN_ICON : MOON_ICON;
       btn.title = t === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối';
+      btn.className = 'header-icon-btn btn-theme';
     }
     localStorage.setItem('app_theme', t);
   }
