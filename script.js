@@ -377,6 +377,13 @@ const App = (function() {
     const cfg = CONFIG[type];
     document.getElementById('snapshotModalTitle').textContent = 'Sao lưu vị trí tài khoản ' + cfg.label;
 
+    // Tự động chuyển đổi bản lưu cũ sang Bản 1 (nếu có)
+    const oldSnap = localStorage.getItem(`${type}_order_snapshot`);
+    if (oldSnap && !localStorage.getItem(`${type}_order_snapshot_1`)) {
+      localStorage.setItem(`${type}_order_snapshot_1`, oldSnap);
+      localStorage.removeItem(`${type}_order_snapshot`);
+    }
+
     [1, 2].forEach(slot => {
       const snapKey = `${type}_order_snapshot_${slot}`;
       const raw = localStorage.getItem(snapKey);
@@ -386,15 +393,17 @@ const App = (function() {
       if (raw) {
         try {
           const snap = JSON.parse(raw);
-          const countText = snap.count ? ` (${snap.count} tài khoản)` : '';
-          timeEl.textContent = snap.time + countText;
+          const count = snap.count || (snap.order ? snap.order.length : 0);
+          const cleanTime = (snap.time || '').replace(/\(.*\)/g, '').trim();
+          const countText = count ? ` (${count} tài khoản)` : '';
+          timeEl.textContent = cleanTime + countText;
           btnRestore.disabled = false;
         } catch {
-          timeEl.textContent = 'Chưa có';
+          timeEl.textContent = 'Chưa có bản lưu';
           btnRestore.disabled = true;
         }
       } else {
-        timeEl.textContent = 'Chưa có';
+        timeEl.textContent = 'Chưa có bản lưu';
         btnRestore.disabled = true;
       }
     });
@@ -406,14 +415,15 @@ const App = (function() {
     const type = state.snapshotType;
     if (!type) return;
     const cfg = CONFIG[type];
+    const count = state[type].length;
     const snap = {
       time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' - ' + new Date().toLocaleDateString('vi-VN'),
-      count: state[type].length,
+      count: count,
       order: state[type].map(a => a.id)
     };
     localStorage.setItem(`${type}_order_snapshot_${slot}`, JSON.stringify(snap));
-    openSnapshotModal(type); // Cập nhật lại thời gian hiển thị ngay lập tức
-    toast(`Đã lưu vị trí vào Bản sao lưu ${slot}!`);
+    openSnapshotModal(type); // Cập nhật hiển thị ngay lập tức
+    toast(`Đã lưu vị trí vào Bản sao lưu ${slot} (${count} tài khoản)!`);
   }
 
   function restoreOrderSnapshot(slot) {

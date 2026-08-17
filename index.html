@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=2.2">
 <script>
   // Chống chớp sáng khi tải giao diện tối
   (function() {
@@ -110,7 +110,7 @@
         <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
       </button>
       <button class="panel-action-btn" onclick="App.openExportModal('facebook')" title="Xuất dữ liệu (Export CSV / JSON)">
-        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
       </button>
       <button class="panel-action-btn" onclick="App.openImportModal('facebook')" title="Nhập dữ liệu từ Excel (Import)">
         <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
@@ -174,7 +174,7 @@
       <div class="snapshot-slot-card">
         <div class="slot-header">
           <span class="slot-title">Bản sao lưu 1</span>
-          <span class="slot-time" id="slotTime1">Chưa có</span>
+          <span class="slot-time" id="slotTime1">Chưa có bản lưu</span>
         </div>
         <div class="slot-actions">
           <button class="btn btn-outline btn-sm" onclick="App.saveOrderSnapshot(1)">💾 Lưu bản 1</button>
@@ -186,7 +186,7 @@
       <div class="snapshot-slot-card">
         <div class="slot-header">
           <span class="slot-title">Bản sao lưu 2</span>
-          <span class="slot-time" id="slotTime2">Chưa có</span>
+          <span class="slot-time" id="slotTime2">Chưa có bản lưu</span>
         </div>
         <div class="slot-actions">
           <button class="btn btn-outline btn-sm" onclick="App.saveOrderSnapshot(2)">💾 Lưu bản 2</button>
@@ -253,6 +253,6 @@
 <div class="toast-container" id="toastContainer"></div>
 
 <!-- JavaScript Logic -->
-<script src="script.js"></script>
+<script src="script.js?v=2.2"></script>
 </body>
 </html>
