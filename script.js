@@ -438,18 +438,11 @@ const App = (function() {
     });
   }
 
-  // === 2 BẢN SAO LƯU VỊ TRÍ TÀI KHOẢN (SLOT 1 & SLOT 2) ===
+  // === 2 BẢN SAO LƯU VỊ TRÍ & TOÀN BỘ TÀI KHOẢN (SLOT 1 & SLOT 2) ===
   function openSnapshotModal(type) {
     state.snapshotType = type;
     const cfg = CONFIG[type];
     document.getElementById('snapshotModalTitle').textContent = 'Sao lưu vị trí tài khoản ' + cfg.label;
-
-    // Tự động chuyển đổi bản lưu cũ sang Bản 1 (nếu có)
-    const oldSnap = localStorage.getItem(`${type}_order_snapshot`);
-    if (oldSnap && !localStorage.getItem(`${type}_order_snapshot_1`)) {
-      localStorage.setItem(`${type}_order_snapshot_1`, oldSnap);
-      localStorage.removeItem(`${type}_order_snapshot`);
-    }
 
     [1, 2].forEach(slot => {
       const snapKey = `${type}_order_snapshot_${slot}`;
@@ -461,7 +454,7 @@ const App = (function() {
       if (raw) {
         try {
           const snap = JSON.parse(raw);
-          const count = snap.count || (snap.order ? snap.order.length : 0);
+          const count = snap.count || (snap.accounts ? snap.accounts.length : (snap.order ? snap.order.length : 0));
           const cleanTime = (snap.time || '').replace(/\(.*\)/g, '').trim();
           const countText = count ? ` (${count} tài khoản)` : '';
           timeEl.textContent = cleanTime + countText;
@@ -485,15 +478,18 @@ const App = (function() {
   function saveOrderSnapshot(slot) {
     const type = state.snapshotType;
     if (!type) return;
-    const count = state[type].length;
+    const cfg = CONFIG[type];
+    const accountsCopy = JSON.parse(JSON.stringify(state[type]));
+    const count = accountsCopy.length;
     const snap = {
       time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' - ' + new Date().toLocaleDateString('vi-VN'),
       count: count,
-      order: state[type].map(a => a.id)
+      accounts: accountsCopy,
+      order: accountsCopy.map(a => a.id)
     };
     localStorage.setItem(`${type}_order_snapshot_${slot}`, JSON.stringify(snap));
     openSnapshotModal(type); // Cập nhật hiển thị ngay lập tức
-    toast(`Đã lưu vị trí vào Bản sao lưu ${slot} (${count} tài khoản)!`);
+    toast(`Đã lưu Bản sao lưu ${slot} (${count} tài khoản)!`);
   }
 
   function restoreOrderSnapshot(slot) {
@@ -508,24 +504,25 @@ const App = (function() {
 
     try {
       const snap = JSON.parse(raw);
-      const idMap = new Map();
-      state[type].forEach(a => idMap.set(a.id, a));
+      if (snap.accounts && Array.isArray(snap.accounts)) {
+        // Khôi phục chuẩn xác toàn bộ danh sách và vị trí lúc bạn lưu
+        state[type] = JSON.parse(JSON.stringify(snap.accounts));
+      } else if (snap.order && Array.isArray(snap.order)) {
+        // Tương thích với bản lưu ID
+        const idMap = new Map();
+        state[type].forEach(a => idMap.set(a.id, a));
+        const reordered = [];
+        snap.order.forEach(id => {
+          if (idMap.has(id)) reordered.push(idMap.get(id));
+        });
+        state[type] = reordered;
+      }
 
-      const reordered = [];
-      snap.order.forEach(id => {
-        if (idMap.has(id)) {
-          reordered.push(idMap.get(id));
-          idMap.delete(id);
-        }
-      });
-      // Những tài khoản mới thêm vào sau bản lưu thì giữ ở cuối
-      idMap.forEach(a => reordered.push(a));
-
-      state[type] = reordered;
       saveData(type);
+      state.page[type] = 1;
       render(type);
       closeModal('snapshotModal');
-      toast(`Đã khôi phục về Bản sao lưu ${slot}!`);
+      toast(`Đã khôi phục về Bản sao lưu ${slot} (${state[type].length} tài khoản)!`);
     } catch {
       toast('Lỗi khi khôi phục dữ liệu bản lưu');
     }
