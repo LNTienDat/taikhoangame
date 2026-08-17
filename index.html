@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=2.4">
+<link rel="stylesheet" href="style.css?v=2.5">
 <script>
   // Chống chớp sáng khi tải giao diện tối
   (function() {
@@ -162,37 +162,49 @@
   </div>
 </div>
 
-<!-- MODAL: 2 BẢN SAO LƯU VỊ TRÍ GỌN GÀNG & RỘNG RÃI -->
+<!-- MODAL: 2 BẢN SAO LƯU GỌN ĐẸP (CHỈ ICON) -->
 <div class="modal-overlay" id="snapshotModal">
-  <div class="modal" style="max-width:520px">
+  <div class="modal snapshot-compact-modal">
     <div class="modal-header">
       <h3 id="snapshotModalTitle">Sao lưu vị trí tài khoản</h3>
       <button class="btn-close" onclick="App.closeModal('snapshotModal')">&times;</button>
     </div>
-    <div class="modal-body">
+    <div class="modal-body" style="padding: 16px 20px;">
       <!-- SLOT 1 -->
-      <div class="snapshot-slot-card">
-        <div class="slot-header">
-          <span class="slot-title">Bản sao lưu 1</span>
-          <span class="slot-time" id="slotTime1">Chưa có bản lưu</span>
+      <div class="snapshot-row">
+        <div class="snapshot-info">
+          <span class="snapshot-name">Bản sao lưu 1</span>
+          <span class="snapshot-meta" id="slotTime1">Chưa có bản lưu</span>
         </div>
-        <div class="slot-actions">
-          <button class="btn btn-outline btn-sm" onclick="App.saveOrderSnapshot(1)">💾 Lưu bản 1</button>
-          <button class="btn btn-primary btn-sm" id="btnRestore1" onclick="App.restoreOrderSnapshot(1)">⏪ Khôi phục</button>
-          <button class="btn btn-danger-outline btn-sm" id="btnDeleteSnap1" onclick="App.deleteOrderSnapshot(1)" title="Xoá bản sao lưu này">🗑️ Xoá</button>
+        <div class="snapshot-btns">
+          <button class="snap-icon-btn btn-save" onclick="App.saveOrderSnapshot(1)" title="Lưu vị trí hiện tại vào Bản 1">
+            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+          </button>
+          <button class="snap-icon-btn btn-restore" id="btnRestore1" onclick="App.restoreOrderSnapshot(1)" title="Khôi phục Bản 1">
+            <svg viewBox="0 0 24 24"><polyline points="11 17 6 12 11 7"></polyline><polyline points="18 17 13 12 18 7"></polyline></svg>
+          </button>
+          <button class="snap-icon-btn btn-del" id="btnDeleteSnap1" onclick="App.deleteOrderSnapshot(1)" title="Xoá Bản 1">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </button>
         </div>
       </div>
 
       <!-- SLOT 2 -->
-      <div class="snapshot-slot-card">
-        <div class="slot-header">
-          <span class="slot-title">Bản sao lưu 2</span>
-          <span class="slot-time" id="slotTime2">Chưa có bản lưu</span>
+      <div class="snapshot-row">
+        <div class="snapshot-info">
+          <span class="snapshot-name">Bản sao lưu 2</span>
+          <span class="snapshot-meta" id="slotTime2">Chưa có bản lưu</span>
         </div>
-        <div class="slot-actions">
-          <button class="btn btn-outline btn-sm" onclick="App.saveOrderSnapshot(2)">💾 Lưu bản 2</button>
-          <button class="btn btn-primary btn-sm" id="btnRestore2" onclick="App.restoreOrderSnapshot(2)">⏪ Khôi phục</button>
-          <button class="btn btn-danger-outline btn-sm" id="btnDeleteSnap2" onclick="App.deleteOrderSnapshot(2)" title="Xoá bản sao lưu này">🗑️ Xoá</button>
+        <div class="snapshot-btns">
+          <button class="snap-icon-btn btn-save" onclick="App.saveOrderSnapshot(2)" title="Lưu vị trí hiện tại vào Bản 2">
+            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+          </button>
+          <button class="snap-icon-btn btn-restore" id="btnRestore2" onclick="App.restoreOrderSnapshot(2)" title="Khôi phục Bản 2">
+            <svg viewBox="0 0 24 24"><polyline points="11 17 6 12 11 7"></polyline><polyline points="18 17 13 12 18 7"></polyline></svg>
+          </button>
+          <button class="snap-icon-btn btn-del" id="btnDeleteSnap2" onclick="App.deleteOrderSnapshot(2)" title="Xoá Bản 2">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+          </button>
         </div>
       </div>
     </div>
@@ -205,7 +217,7 @@
     <div class="confirm-icon-circle" id="confirmIconCircle"></div>
     <h3 class="confirm-title" id="confirmTitle">Xác nhận</h3>
     <p class="confirm-message" id="confirmMessage">Nội dung chi tiết...</p>
-    <div class="confirm-actions" id="confirmActions">
+    <div class="confirm-actions">
       <button class="btn btn-ghost" id="confirmCancelBtn">Huỷ</button>
       <button class="btn" id="confirmOkBtn">Xác nhận</button>
     </div>
@@ -268,6 +280,6 @@
 <div class="toast-container" id="toastContainer"></div>
 
 <!-- JavaScript Logic -->
-<script src="script.js?v=2.4"></script>
+<script src="script.js?v=2.5"></script>
 </body>
 </html>
