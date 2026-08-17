@@ -371,35 +371,38 @@ const App = (function() {
     });
   }
 
-  // === SAO LƯU & KHÔI PHỤC VỊ TRÍ SẮP XẾP (SNAPSHOT) ===
+  // === 2 BẢN SAO LƯU VỊ TRÍ TÀI KHOẢN (SLOT 1 & SLOT 2) ===
   function openSnapshotModal(type) {
     state.snapshotType = type;
     const cfg = CONFIG[type];
-    document.getElementById('snapshotModalTitle').textContent = 'Vị trí tài khoản ' + cfg.label;
+    document.getElementById('snapshotModalTitle').textContent = 'Sao lưu vị trí tài khoản ' + cfg.label;
 
-    const snapKey = type + '_order_snapshot';
-    const raw = localStorage.getItem(snapKey);
-    const restoreCard = document.getElementById('btnRestoreSnapshot');
-    const timeEl = document.getElementById('snapshotStatusTime');
+    [1, 2].forEach(slot => {
+      const snapKey = `${type}_order_snapshot_${slot}`;
+      const raw = localStorage.getItem(snapKey);
+      const timeEl = document.getElementById(`slotTime${slot}`);
+      const btnRestore = document.getElementById(`btnRestore${slot}`);
 
-    if (raw) {
-      try {
-        const snap = JSON.parse(raw);
-        timeEl.textContent = `${snap.time} (${snap.count || snap.order.length} tk)`;
-        restoreCard.classList.remove('disabled');
-      } catch {
-        timeEl.textContent = 'Chưa có bản lưu';
-        restoreCard.classList.add('disabled');
+      if (raw) {
+        try {
+          const snap = JSON.parse(raw);
+          const countText = snap.count ? ` (${snap.count} tài khoản)` : '';
+          timeEl.textContent = snap.time + countText;
+          btnRestore.disabled = false;
+        } catch {
+          timeEl.textContent = 'Chưa có';
+          btnRestore.disabled = true;
+        }
+      } else {
+        timeEl.textContent = 'Chưa có';
+        btnRestore.disabled = true;
       }
-    } else {
-      timeEl.textContent = 'Chưa có bản lưu';
-      restoreCard.classList.add('disabled');
-    }
+    });
 
     openModal('snapshotModal');
   }
 
-  function saveOrderSnapshot() {
+  function saveOrderSnapshot(slot) {
     const type = state.snapshotType;
     if (!type) return;
     const cfg = CONFIG[type];
@@ -408,18 +411,18 @@ const App = (function() {
       count: state[type].length,
       order: state[type].map(a => a.id)
     };
-    localStorage.setItem(type + '_order_snapshot', JSON.stringify(snap));
-    closeModal('snapshotModal');
-    toast(`Đã sao lưu vị trí chuẩn của ${cfg.label}!`);
+    localStorage.setItem(`${type}_order_snapshot_${slot}`, JSON.stringify(snap));
+    openSnapshotModal(type); // Cập nhật lại thời gian hiển thị ngay lập tức
+    toast(`Đã lưu vị trí vào Bản sao lưu ${slot}!`);
   }
 
-  function restoreOrderSnapshot() {
+  function restoreOrderSnapshot(slot) {
     const type = state.snapshotType;
     if (!type) return;
-    const snapKey = type + '_order_snapshot';
+    const snapKey = `${type}_order_snapshot_${slot}`;
     const raw = localStorage.getItem(snapKey);
     if (!raw) {
-      toast('Chưa có bản sao lưu vị trí nào');
+      toast(`Chưa có dữ liệu Bản sao lưu ${slot}`);
       return;
     }
 
@@ -442,7 +445,7 @@ const App = (function() {
       saveData(type);
       render(type);
       closeModal('snapshotModal');
-      toast(`Đã khôi phục về vị trí lưu lúc ${snap.time}!`);
+      toast(`Đã khôi phục về Bản sao lưu ${slot}!`);
     } catch {
       toast('Lỗi khi khôi phục dữ liệu bản lưu');
     }
@@ -591,7 +594,7 @@ const App = (function() {
   // === MODAL: IMPORT ===
   function openImportModal(type) {
     state.importType = type; state.importData = null;
-    document.getElementById('importModalTitle').textContent = 'Import ' + CONFIG[type].label;
+    document.getElementById('importModalTitle').textContent = 'Import tài khoản ' + CONFIG[type].label;
     document.getElementById('importColumnHint').textContent = CONFIG[type].importHint;
     document.getElementById('importTextarea').value = '';
     document.getElementById('importPreview').innerHTML = '';
@@ -651,7 +654,7 @@ const App = (function() {
   // === MODAL: EXPORT ===
   function openExportModal(type) {
     state.exportType = type;
-    document.getElementById('exportModalTitle').textContent = 'Export ' + CONFIG[type].label;
+    document.getElementById('exportModalTitle').textContent = 'Export tài khoản ' + CONFIG[type].label;
     openModal('exportModal');
   }
   function doExport(format) {
