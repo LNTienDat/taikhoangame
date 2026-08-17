@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=2.2">
+<link rel="stylesheet" href="style.css?v=2.4">
 <script>
   // Chống chớp sáng khi tải giao diện tối
   (function() {
@@ -110,7 +110,7 @@
         <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
       </button>
       <button class="panel-action-btn" onclick="App.openExportModal('facebook')" title="Xuất dữ liệu (Export CSV / JSON)">
-        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
       </button>
       <button class="panel-action-btn" onclick="App.openImportModal('facebook')" title="Nhập dữ liệu từ Excel (Import)">
         <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
@@ -126,7 +126,7 @@
 
 <!-- MODAL: THÊM -->
 <div class="modal-overlay" id="addModal">
-  <div class="modal">
+  <div class="modal" style="max-width:520px">
     <div class="modal-header">
       <h3 id="addModalTitle">Thêm tài khoản</h3>
       <button class="btn-close" onclick="App.closeModal('addModal')">&times;</button>
@@ -138,14 +138,14 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="App.closeModal('addModal')">Huỷ</button>
-      <button class="btn btn-primary" onclick="App.submitAddForm()">Thêm</button>
+      <button class="btn btn-primary" onclick="App.submitAddForm()">Thêm tài khoản</button>
     </div>
   </div>
 </div>
 
 <!-- MODAL: SỬA -->
 <div class="modal-overlay" id="editModal">
-  <div class="modal">
+  <div class="modal" style="max-width:520px">
     <div class="modal-header">
       <h3 id="editModalTitle">Sửa thông tin tài khoản</h3>
       <button class="btn-close" onclick="App.closeModal('editModal')">&times;</button>
@@ -162,9 +162,9 @@
   </div>
 </div>
 
-<!-- MODAL: 2 BẢN SAO LƯU VỊ TRÍ GỌN GÀNG -->
+<!-- MODAL: 2 BẢN SAO LƯU VỊ TRÍ GỌN GÀNG & RỘNG RÃI -->
 <div class="modal-overlay" id="snapshotModal">
-  <div class="modal" style="max-width:440px">
+  <div class="modal" style="max-width:520px">
     <div class="modal-header">
       <h3 id="snapshotModalTitle">Sao lưu vị trí tài khoản</h3>
       <button class="btn-close" onclick="App.closeModal('snapshotModal')">&times;</button>
@@ -179,6 +179,7 @@
         <div class="slot-actions">
           <button class="btn btn-outline btn-sm" onclick="App.saveOrderSnapshot(1)">💾 Lưu bản 1</button>
           <button class="btn btn-primary btn-sm" id="btnRestore1" onclick="App.restoreOrderSnapshot(1)">⏪ Khôi phục</button>
+          <button class="btn btn-danger-outline btn-sm" id="btnDeleteSnap1" onclick="App.deleteOrderSnapshot(1)" title="Xoá bản sao lưu này">🗑️ Xoá</button>
         </div>
       </div>
 
@@ -191,15 +192,29 @@
         <div class="slot-actions">
           <button class="btn btn-outline btn-sm" onclick="App.saveOrderSnapshot(2)">💾 Lưu bản 2</button>
           <button class="btn btn-primary btn-sm" id="btnRestore2" onclick="App.restoreOrderSnapshot(2)">⏪ Khôi phục</button>
+          <button class="btn btn-danger-outline btn-sm" id="btnDeleteSnap2" onclick="App.deleteOrderSnapshot(2)" title="Xoá bản sao lưu này">🗑️ Xoá</button>
         </div>
       </div>
     </div>
   </div>
 </div>
 
+<!-- MODAL: POPUP XÁC NHẬN ĐẸP (SWEETALERT2 STYLE) -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal confirm-modal-box">
+    <div class="confirm-icon-circle" id="confirmIconCircle"></div>
+    <h3 class="confirm-title" id="confirmTitle">Xác nhận</h3>
+    <p class="confirm-message" id="confirmMessage">Nội dung chi tiết...</p>
+    <div class="confirm-actions" id="confirmActions">
+      <button class="btn btn-ghost" id="confirmCancelBtn">Huỷ</button>
+      <button class="btn" id="confirmOkBtn">Xác nhận</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: IMPORT -->
 <div class="modal-overlay" id="importModal">
-  <div class="modal" style="max-width:620px">
+  <div class="modal" style="max-width:680px">
     <div class="modal-header">
       <h3 id="importModalTitle">Import tài khoản</h3>
       <button class="btn-close" onclick="App.closeModal('importModal')">&times;</button>
@@ -207,7 +222,7 @@
     <div class="modal-body">
       <div class="form-group">
         <label>Dán dữ liệu từ Excel (mỗi dòng 1 tài khoản, các cột cách nhau bằng Tab)</label>
-        <textarea id="importTextarea" class="import-textarea" rows="5"></textarea>
+        <textarea id="importTextarea" class="import-textarea" rows="6"></textarea>
       </div>
       <div class="import-hint-box">
         <span class="import-hint-label">Thứ tự cột:</span>
@@ -229,7 +244,7 @@
 
 <!-- MODAL: EXPORT -->
 <div class="modal-overlay" id="exportModal">
-  <div class="modal" style="max-width:420px">
+  <div class="modal" style="max-width:480px">
     <div class="modal-header">
       <h3 id="exportModalTitle">Export tài khoản</h3>
       <button class="btn-close" onclick="App.closeModal('exportModal')">&times;</button>
@@ -253,6 +268,6 @@
 <div class="toast-container" id="toastContainer"></div>
 
 <!-- JavaScript Logic -->
-<script src="script.js?v=2.2"></script>
+<script src="script.js?v=2.4"></script>
 </body>
 </html>

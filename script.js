@@ -54,6 +54,7 @@ const App = (function() {
     draggedType: null,
     pageHoverTimer: null,
     snapshotType: null,
+    confirmResolver: null,
     importType: null, importData: null,
     exportType: null, addType: null,
     editType: null, editId: null
@@ -98,6 +99,59 @@ const App = (function() {
   }
   function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
+  // === POPUP XÁC NHẬN ĐẸP (SWEETALERT2 STYLE) ===
+  function showConfirm({ type = 'warning', title = 'Xác nhận', message = '', okText = 'Xác nhận', cancelText = 'Huỷ', okBtnClass = 'btn-primary' }) {
+    return new Promise(resolve => {
+      const iconCircle = document.getElementById('confirmIconCircle');
+      const titleEl = document.getElementById('confirmTitle');
+      const msgEl = document.getElementById('confirmMessage');
+      const okBtn = document.getElementById('confirmOkBtn');
+      const cancelBtn = document.getElementById('confirmCancelBtn');
+
+      titleEl.textContent = title;
+      msgEl.innerHTML = message;
+      okBtn.textContent = okText;
+      okBtn.className = `btn ${okBtnClass}`;
+
+      if (cancelText) {
+        cancelBtn.style.display = 'inline-flex';
+        cancelBtn.textContent = cancelText;
+      } else {
+        cancelBtn.style.display = 'none';
+      }
+
+      iconCircle.className = `confirm-icon-circle icon-${type}`;
+      if (type === 'success') {
+        iconCircle.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+      } else if (type === 'danger') {
+        iconCircle.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
+      } else {
+        iconCircle.innerHTML = `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+      }
+
+      let isFinished = false;
+      function finish(val) {
+        if (isFinished) return;
+        isFinished = true;
+        state.confirmResolver = null;
+        closeModalDirect('confirmModal');
+        resolve(val);
+      }
+
+      state.confirmResolver = finish;
+      openModal('confirmModal');
+
+      okBtn.onclick = (e) => {
+        e.stopPropagation();
+        finish(true);
+      };
+      cancelBtn.onclick = (e) => {
+        e.stopPropagation();
+        finish(false);
+      };
+    });
+  }
+
   // === LOCALSTORAGE ===
   function loadData() {
     TYPES.forEach(t => {
@@ -126,14 +180,27 @@ const App = (function() {
     const acc = state[type].find(a => a.id === id);
     if (acc) { Object.assign(acc, updates); saveData(type); render(type); }
   }
-  function deleteAccount(type, id) {
+
+  async function deleteAccount(type, id) {
     const acc = state[type].find(a => a.id === id);
     const name = acc ? (acc[CONFIG[type].mainField] || 'tài khoản này') : 'tài khoản này';
-    if (!confirm(`Bạn có chắc muốn xoá "${name}" không?`)) return;
+
+    const confirmed = await showConfirm({
+      type: 'danger',
+      title: 'Xoá tài khoản?',
+      message: `Bạn có chắc chắn muốn xoá tài khoản <b>"${escapeHtml(name)}"</b> không?`,
+      okText: 'Xoá tài khoản',
+      cancelText: 'Huỷ',
+      okBtnClass: 'btn-danger'
+    });
+
+    if (!confirmed) return;
+
     state[type] = state[type].filter(a => a.id !== id);
     saveData(type); render(type);
     toast('Đã xoá tài khoản');
   }
+
   function toggleCheck(type, id) {
     const acc = state[type].find(a => a.id === id);
     if (acc) { acc.daDangNhap = !acc.daDangNhap; saveData(type); render(type); }
@@ -389,6 +456,7 @@ const App = (function() {
       const raw = localStorage.getItem(snapKey);
       const timeEl = document.getElementById(`slotTime${slot}`);
       const btnRestore = document.getElementById(`btnRestore${slot}`);
+      const btnDelete = document.getElementById(`btnDeleteSnap${slot}`);
 
       if (raw) {
         try {
@@ -398,13 +466,16 @@ const App = (function() {
           const countText = count ? ` (${count} tài khoản)` : '';
           timeEl.textContent = cleanTime + countText;
           btnRestore.disabled = false;
+          if (btnDelete) btnDelete.disabled = false;
         } catch {
           timeEl.textContent = 'Chưa có bản lưu';
           btnRestore.disabled = true;
+          if (btnDelete) btnDelete.disabled = true;
         }
       } else {
         timeEl.textContent = 'Chưa có bản lưu';
         btnRestore.disabled = true;
+        if (btnDelete) btnDelete.disabled = true;
       }
     });
 
@@ -414,7 +485,6 @@ const App = (function() {
   function saveOrderSnapshot(slot) {
     const type = state.snapshotType;
     if (!type) return;
-    const cfg = CONFIG[type];
     const count = state[type].length;
     const snap = {
       time: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' - ' + new Date().toLocaleDateString('vi-VN'),
@@ -461,12 +531,59 @@ const App = (function() {
     }
   }
 
-  // === RESET SỰ KIỆN CHUNG (2 LẦN XÁC NHẬN) ===
-  function resetAllEvents() {
-    const step1 = confirm('Bạn có chắc chắn muốn Reset trạng thái đăng nhập của TẤT CẢ tài khoản không?');
+  async function deleteOrderSnapshot(slot) {
+    const type = state.snapshotType;
+    if (!type) return;
+    const snapKey = `${type}_order_snapshot_${slot}`;
+    const raw = localStorage.getItem(snapKey);
+    if (!raw) {
+      toast(`Bản sao lưu ${slot} đang trống`);
+      return;
+    }
+
+    closeModal('snapshotModal');
+
+    const confirmed = await showConfirm({
+      type: 'danger',
+      title: `Xoá Bản sao lưu ${slot}?`,
+      message: `Bạn có chắc chắn muốn xoá dữ liệu của <b>Bản sao lưu ${slot}</b> không?`,
+      okText: 'Xoá bản lưu',
+      cancelText: 'Huỷ',
+      okBtnClass: 'btn-danger'
+    });
+
+    if (confirmed) {
+      localStorage.removeItem(snapKey);
+      toast(`Đã xoá Bản sao lưu ${slot}!`);
+    }
+
+    openSnapshotModal(type);
+  }
+
+  // === RESET SỰ KIỆN CHUNG (CẢNH BÁO 2 LẦN, XONG TỰ ĐÓNG VÀ TOAST) ===
+  async function resetAllEvents() {
+    const step1 = await showConfirm({
+      type: 'warning',
+      title: 'Reset sự kiện?',
+      message: 'Bạn có chắc chắn muốn đưa trạng thái của <b>TẤT CẢ</b> tài khoản về <b>chưa đăng nhập</b> không?',
+      okText: 'Tiếp tục',
+      cancelText: 'Huỷ',
+      okBtnClass: 'btn-warning'
+    });
+
     if (!step1) return;
 
-    const step2 = confirm('XÁC NHẬN LẦN CUỐI: Bạn có thực sự muốn Reset toàn bộ sự kiện không?');
+    await new Promise(r => setTimeout(r, 120));
+
+    const step2 = await showConfirm({
+      type: 'warning',
+      title: 'Xác nhận lần cuối!',
+      message: 'Toàn bộ tài khoản sẽ được đánh dấu là chưa đăng nhập. Bạn đồng ý Reset chứ?',
+      okText: 'Đồng ý Reset',
+      cancelText: 'Huỷ',
+      okBtnClass: 'btn-warning'
+    });
+
     if (!step2) return;
 
     TYPES.forEach(t => {
@@ -474,21 +591,40 @@ const App = (function() {
       saveData(t);
       render(t);
     });
-    toast('Đã reset sự kiện tất cả tài khoản');
+
+    toast('Đã Reset sự kiện tất cả tài khoản');
   }
 
-  // === XOÁ TẤT CẢ TÀI KHOẢN (2 LẦN XÁC NHẬN) ===
-  function deleteAllAccounts() {
+  // === XOÁ TẤT CẢ TÀI KHOẢN (CẢNH BÁO 2 LẦN, XONG TỰ ĐÓNG VÀ TOAST) ===
+  async function deleteAllAccounts() {
     const total = TYPES.reduce((sum, t) => sum + state[t].length, 0);
     if (total === 0) {
       toast('Hiện không có tài khoản nào để xoá');
       return;
     }
 
-    const step1 = confirm(`CẢNH BÁO: Bạn có chắc chắn muốn XOÁ TOÀN BỘ ${total} TÀI KHOẢN (Garena, Gmail, Facebook) không?`);
+    const step1 = await showConfirm({
+      type: 'danger',
+      title: 'Xoá toàn bộ tài khoản?',
+      message: `CẢNH BÁO: Bạn có chắc chắn muốn xoá tất cả <b>${total} tài khoản</b> (Garena, Gmail, Facebook) không?`,
+      okText: 'Tiếp tục xoá',
+      cancelText: 'Huỷ',
+      okBtnClass: 'btn-danger'
+    });
+
     if (!step1) return;
 
-    const step2 = confirm('XÁC NHẬN LẦN CUỐI: Toàn bộ dữ liệu tài khoản sẽ bị xoá vĩnh viễn và không thể khôi phục. Bạn vẫn muốn xoá chứ?');
+    await new Promise(r => setTimeout(r, 120));
+
+    const step2 = await showConfirm({
+      type: 'danger',
+      title: 'Xác nhận xoá vĩnh viễn!',
+      message: 'Dữ liệu toàn bộ tài khoản sẽ bị <b>xoá vĩnh viễn</b> và không thể khôi phục. Bạn vẫn muốn xoá?',
+      okText: 'Xoá vĩnh viễn',
+      cancelText: 'Huỷ',
+      okBtnClass: 'btn-danger'
+    });
+
     if (!step2) return;
 
     TYPES.forEach(t => {
@@ -496,6 +632,7 @@ const App = (function() {
       saveData(t);
       render(t);
     });
+
     toast('Đã xoá toàn bộ tài khoản');
   }
 
@@ -696,16 +833,37 @@ const App = (function() {
   }
 
   // === MODAL HELPERS ===
-  function openModal(id) { document.getElementById(id).classList.add('active'); document.body.style.overflow = 'hidden'; }
-  function closeModal(id) { document.getElementById(id).classList.remove('active'); document.body.style.overflow = ''; }
+  function openModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModalDirect(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  function closeModal(id) {
+    if (id === 'confirmModal' && state.confirmResolver) {
+      state.confirmResolver(false);
+      return;
+    }
+    closeModalDirect(id);
+  }
+
   function setupModalClose() {
     document.querySelectorAll('.modal-overlay').forEach(o => {
-      o.addEventListener('click', e => { if (e.target === o) { o.classList.remove('active'); document.body.style.overflow = ''; } });
+      o.addEventListener('click', e => {
+        if (e.target === o) {
+          closeModal(o.id);
+        }
+      });
     });
     document.addEventListener('keydown', e => {
       if (e.key === 'Escape') {
-        document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
-        document.body.style.overflow = '';
+        document.querySelectorAll('.modal-overlay.active').forEach(m => closeModal(m.id));
       }
     });
   }
@@ -759,7 +917,7 @@ const App = (function() {
     toggleCheck, deleteAccount,
     resetAllEvents, deleteAllAccounts,
     changePage,
-    openSnapshotModal, saveOrderSnapshot, restoreOrderSnapshot,
+    openSnapshotModal, saveOrderSnapshot, restoreOrderSnapshot, deleteOrderSnapshot,
     openAddModal, submitAddForm,
     openEditModal, submitEditForm,
     openImportModal, previewImport, confirmImport,
