@@ -164,7 +164,7 @@
 
 <!-- MODAL: SẮP XẾP THỨ TỰ (NHỎ GỌN) -->
 <div class="modal-overlay" id="sortModal">
-  <div class="modal" style="max-width:380px">
+  <div class="modal" style="max-width:360px">
     <div class="modal-header">
       <h3 id="sortModalTitle">Sắp xếp thứ tự</h3>
       <button class="btn-close" onclick="App.closeModal('sortModal')">&times;</button>
@@ -174,44 +174,37 @@
         <button class="sort-option-btn" onclick="App.applySort('game-asc')">
           <div>
             <div>Tên trong game (A → Z)</div>
-            <div class="sort-desc">Xếp theo thứ tự chữ cái tên nhân vật</div>
+            <div class="sort-desc">Xếp theo thứ tự bảng chữ cái tên nhân vật</div>
           </div>
           <span>🔤</span>
         </button>
         <button class="sort-option-btn" onclick="App.applySort('game-desc')">
           <div>
             <div>Tên trong game (Z → A)</div>
-            <div class="sort-desc">Xếp ngược thứ tự chữ cái tên nhân vật</div>
+            <div class="sort-desc">Xếp ngược thứ tự bảng chữ cái tên nhân vật</div>
           </div>
           <span>🔤</span>
         </button>
         <button class="sort-option-btn" onclick="App.applySort('acc-asc')">
           <div>
             <div>Tên đăng nhập (A → Z)</div>
-            <div class="sort-desc">Xếp theo thứ tự chữ cái tên tài khoản</div>
+            <div class="sort-desc">Xếp theo thứ tự bảng chữ cái tên tài khoản</div>
           </div>
           <span>🔤</span>
         </button>
         <button class="sort-option-btn" onclick="App.applySort('acc-desc')">
           <div>
             <div>Tên đăng nhập (Z → A)</div>
-            <div class="sort-desc">Xếp ngược thứ tự chữ cái tên tài khoản</div>
+            <div class="sort-desc">Xếp ngược thứ tự bảng chữ cái tên tài khoản</div>
           </div>
           <span>🔤</span>
         </button>
         <button class="sort-option-btn" onclick="App.applySort('reverse')">
           <div>
-            <div>Đảo ngược thứ tự</div>
+            <div>Đảo ngược danh sách</div>
             <div class="sort-desc">Đảo chiều toàn bộ danh sách hiện tại</div>
           </div>
           <span>🔃</span>
-        </button>
-        <button class="sort-option-btn" id="btnToggleManualSort" onclick="App.toggleManualSortMode()">
-          <div>
-            <div id="manualSortTitle">Bật nút di chuyển dòng (▲ ▼)</div>
-            <div class="sort-desc">Hiện nút lên/xuống trực tiếp trên mỗi dòng</div>
-          </div>
-          <span id="manualSortIcon">⇅</span>
         </button>
       </div>
     </div>
