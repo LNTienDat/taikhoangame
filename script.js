@@ -11,10 +11,11 @@ const App = (function() {
       label: 'Garena',
       fields: [
         { key: 'tenNhanVat', label: 'Tên trong game', required: false },
-        { key: 'tenGarena', label: 'Tên tài khoản Garena', required: true }
+        { key: 'tenGarena', label: 'Tên tài khoản Garena', required: true },
+        { key: 'gmailDangKy', label: 'Gmail liên kết (dùng khi khôi phục)', required: false }
       ],
-      importColumns: ['tenNhanVat', 'tenGarena'],
-      importHint: 'Tên trong game | Tên tài khoản Garena'
+      importColumns: ['tenNhanVat', 'tenGarena', 'gmailDangKy'],
+      importHint: 'Tên trong game | Tên Garena | Gmail liên kết'
     },
     gmail: {
       storageKey: 'gmail_accounts',
@@ -176,6 +177,7 @@ const App = (function() {
         const matchedName = emailToGameName.get(currentEmail);
         if (gar.tenNhanVat !== matchedName) {
           gar.tenNhanVat = matchedName;
+          if (!gar.gmailDangKy && currentEmail) gar.gmailDangKy = (gar.gmailDangKy || currentName);
           hasChange = true;
         }
       } else if (gar.tenNhanVat && gar.tenNhanVat === gar.tenGarena) {
@@ -196,7 +198,6 @@ const App = (function() {
       catch { state[t] = []; }
     });
 
-    // Tự động đối soát và điền tên nhân vật game cho bảng Garena
     autoSyncGarenaFromGmail();
 
     const currentTheme = localStorage.getItem('app_theme') || 'light';
@@ -290,7 +291,11 @@ const App = (function() {
     let sorted = getSorted(type);
     const term = state.searchTerm;
     if (term) {
-      sorted = sorted.filter(acc => matchSearch(acc[CONFIG[type].mainField] || '', term) || matchSearch(acc.tenNhanVat || '', term));
+      sorted = sorted.filter(acc =>
+        matchSearch(acc[CONFIG[type].mainField] || '', term) ||
+        matchSearch(acc.tenNhanVat || '', term) ||
+        matchSearch(acc.gmailDangKy || '', term)
+      );
     }
 
     const totalItems = sorted.length;
@@ -352,7 +357,7 @@ const App = (function() {
     setupDragAndDrop(type);
   }
 
-  // Dòng tài khoản dạng cột: [⠿ Kéo thả] [Checkbox] [Cột 1: Tên trong game | Cột 2: Tên tài khoản] [✏️ 🗑️]
+  // Dòng tài khoản hiển thị CHỈ 2 CỘT: [Cột 1: Tên trong game | Cột 2: Tên tài khoản]
   function renderRow(type, acc) {
     const cfg = CONFIG[type];
     const term = state.searchTerm;
@@ -799,13 +804,34 @@ const App = (function() {
     const parsed = raw.split('\n').filter(l => l.trim()).map(line => {
       const cols = line.split('\t');
       const row = {};
-      if (cols.length === 1) {
-        row[cfg.mainField] = cols[0].trim();
-        row.tenNhanVat = '';
+      if (type === 'garena') {
+        if (cols.length === 1) {
+          row.tenGarena = cols[0].trim();
+          row.tenNhanVat = '';
+          row.gmailDangKy = '';
+        } else if (cols.length === 2) {
+          row.tenNhanVat = (cols[0] || '').trim();
+          row.tenGarena = (cols[1] || '').trim();
+          row.gmailDangKy = '';
+        } else {
+          if (cols[0].includes('@')) {
+            row.gmailDangKy = cols[0].trim();
+            row.tenGarena = (cols[1] || '').trim();
+            row.tenNhanVat = (cols[2] || '').trim();
+          } else {
+            row.tenNhanVat = (cols[0] || '').trim();
+            row.tenGarena = (cols[1] || '').trim();
+            row.gmailDangKy = (cols[2] || '').trim();
+          }
+        }
       } else {
-        // Cột 1: Tên trong game | Cột 2: Tên tài khoản
-        row.tenNhanVat = (cols[0] || '').trim();
-        row[cfg.mainField] = (cols[1] || '').trim();
+        if (cols.length === 1) {
+          row[cfg.mainField] = cols[0].trim();
+          row.tenNhanVat = '';
+        } else {
+          row.tenNhanVat = (cols[0] || '').trim();
+          row[cfg.mainField] = (cols[1] || '').trim();
+        }
       }
       return row;
     });
