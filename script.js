@@ -13,8 +13,8 @@ const App = (function() {
         { key: 'tenGarena', label: 'Tên tài khoản Garena', required: true },
         { key: 'tenNhanVat', label: 'Tên nhân vật game', required: false }
       ],
-      importColumns: ['tenGarena', 'tenNhanVat'],
-      importHint: 'Tên Garena | Tên nhân vật'
+      importColumns: ['tenNhanVat', 'tenGarena'],
+      importHint: 'Tên nhân vật | Tên tài khoản Garena'
     },
     gmail: {
       storageKey: 'gmail_accounts',
@@ -24,8 +24,8 @@ const App = (function() {
         { key: 'gmail', label: 'Địa chỉ Gmail', required: true },
         { key: 'tenNhanVat', label: 'Tên nhân vật game', required: false }
       ],
-      importColumns: ['gmail', 'tenNhanVat'],
-      importHint: 'Địa chỉ Gmail | Tên nhân vật'
+      importColumns: ['tenNhanVat', 'gmail'],
+      importHint: 'Tên nhân vật | Địa chỉ Gmail'
     },
     facebook: {
       storageKey: 'facebook_accounts',
@@ -35,8 +35,8 @@ const App = (function() {
         { key: 'facebook', label: 'Tên tài khoản Facebook', required: true },
         { key: 'tenNhanVat', label: 'Tên nhân vật game', required: false }
       ],
-      importColumns: ['facebook', 'tenNhanVat'],
-      importHint: 'Tên Facebook | Tên nhân vật'
+      importColumns: ['tenNhanVat', 'facebook'],
+      importHint: 'Tên nhân vật | Tên Facebook'
     }
   };
 
@@ -151,12 +151,50 @@ const App = (function() {
     });
   }
 
+  // === TỰ ĐỘNG ĐỒNG BỘ TÊN NHÂN VẬT GARENA TỪ GMAIL SANG ===
+  function autoSyncGarenaFromGmail() {
+    const emailToGameName = new Map();
+    state.gmail.forEach(g => {
+      const email = (g.gmail || '').trim().toLowerCase();
+      const gameName = (g.tenNhanVat || '').trim();
+      if (email && gameName) {
+        emailToGameName.set(email, gameName);
+      }
+    });
+
+    let hasChange = false;
+    state.garena.forEach(gar => {
+      // Nếu tenNhanVat trùng với tên đăng nhập hoặc tenNhanVat đang là Gmail
+      const currentName = (gar.tenNhanVat || '').trim();
+      const currentEmail = (gar.gmailDangKy || (currentName.includes('@') ? currentName : '')).trim().toLowerCase();
+
+      if (currentEmail && emailToGameName.has(currentEmail)) {
+        const matchedName = emailToGameName.get(currentEmail);
+        if (gar.tenNhanVat !== matchedName) {
+          gar.tenNhanVat = matchedName;
+          hasChange = true;
+        }
+      } else if (gar.tenNhanVat && gar.tenNhanVat === gar.tenGarena) {
+        gar.tenNhanVat = '';
+        hasChange = true;
+      }
+    });
+
+    if (hasChange) {
+      saveData('garena');
+    }
+  }
+
   // === LOCALSTORAGE ===
   function loadData() {
     TYPES.forEach(t => {
       try { const r = localStorage.getItem(CONFIG[t].storageKey); state[t] = r ? JSON.parse(r) : []; }
       catch { state[t] = []; }
     });
+
+    // Đồng bộ tên nhân vật game cho bảng Garena từ danh sách Gmail
+    autoSyncGarenaFromGmail();
+
     const currentTheme = localStorage.getItem('app_theme') || 'light';
     setTheme(currentTheme);
   }
@@ -169,6 +207,7 @@ const App = (function() {
     state[type].unshift({ id: uuid(), daDangNhap: false, ...data });
     saveData(type);
     state.page[type] = 1;
+    if (type === 'gmail') autoSyncGarenaFromGmail();
     render(type);
     toast('Đã thêm tài khoản');
   }
@@ -177,7 +216,12 @@ const App = (function() {
   }
   function updateAccount(type, id, updates) {
     const acc = state[type].find(a => a.id === id);
-    if (acc) { Object.assign(acc, updates); saveData(type); render(type); }
+    if (acc) {
+      Object.assign(acc, updates);
+      saveData(type);
+      if (type === 'gmail') autoSyncGarenaFromGmail();
+      render(type);
+    }
   }
 
   async function deleteAccount(type, id) {
@@ -278,7 +322,7 @@ const App = (function() {
           pagesHtml += `<button class="page-num-btn ${activeCls}" data-page="${i}" onclick="App.changePage('${type}', ${i})">${i}</button>`;
         }
       } else {
-        pagesHtml += `<button class="page-num-btn ${currentPage === 1 ? 'active' : ''}" data-page="1" onclick="App.changePage('${type}', 1)">1</button>`;
+        pagesHtml += `<button class="page-num-btn ${currentPage === 1 ? 'active' : ''}" data-page="1" onclick="App.changePage('${type}', ${i})">1</button>`;
         if (currentPage > 3) pagesHtml += `<span class="page-dots">…</span>`;
 
         const start = Math.max(2, currentPage - 1);
@@ -394,7 +438,6 @@ const App = (function() {
         e.dataTransfer.dropEffect = 'move';
         btn.classList.add('drag-target-hover');
 
-        // Tự động lật sang trang đó sau 450ms rê chuột
         if (!state.pageHoverTimer && state.page[type] !== targetPage) {
           state.pageHoverTimer = setTimeout(() => {
             state.page[type] = targetPage;
@@ -424,7 +467,6 @@ const App = (function() {
         const fromIndex = arr.findIndex(a => a.id === sourceId);
         if (fromIndex === -1) return;
 
-        // Chuyển tài khoản vào đầu trang mục tiêu
         const targetIndex = (targetPage - 1) * PAGE_SIZE;
         const [movedItem] = arr.splice(fromIndex, 1);
         arr.splice(targetIndex, 0, movedItem);
@@ -487,7 +529,7 @@ const App = (function() {
       order: accountsCopy.map(a => a.id)
     };
     localStorage.setItem(`${type}_order_snapshot_${slot}`, JSON.stringify(snap));
-    openSnapshotModal(type); // Cập nhật hiển thị ngay lập tức
+    openSnapshotModal(type);
     toast(`Đã lưu Bản sao lưu ${slot} (${count} tài khoản)!`);
   }
 
@@ -752,9 +794,17 @@ const App = (function() {
     const parsed = raw.split('\n').filter(l => l.trim()).map(line => {
       const cols = line.split('\t');
       const row = {};
-      cfg.importColumns.forEach((k, i) => { row[k] = (cols[i] || '').trim(); });
+      if (cols.length === 1) {
+        row[cfg.mainField] = cols[0].trim();
+        row.tenNhanVat = '';
+      } else {
+        // Hỗ trợ cả 2 thứ tự cột: [Tên nhân vật, Tên tài khoản] hoặc [Tên tài khoản, Tên nhân vật]
+        row.tenNhanVat = (cols[0] || '').trim();
+        row[cfg.mainField] = (cols[1] || '').trim();
+      }
       return row;
     });
+
     const valid = parsed.filter(r => r[cfg.mainField]);
     if (!valid.length) { toast('Không tìm thấy dòng dữ liệu hợp lệ'); return; }
     state.importData = valid;
@@ -787,7 +837,9 @@ const App = (function() {
     const type = state.importType, data = state.importData;
     if (!data || !data.length) return;
     data.forEach(row => addAccountSilent(type, row));
-    saveData(type); render(type);
+    saveData(type);
+    if (type === 'gmail') autoSyncGarenaFromGmail();
+    render(type);
     closeModal('importModal');
     toast(`Đã import thành công ${data.length} tài khoản`);
   }
