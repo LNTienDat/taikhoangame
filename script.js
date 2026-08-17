@@ -199,19 +199,38 @@ const App = (function() {
 
     listEl.innerHTML = pageItems.map(acc => renderRow(type, acc)).join('');
 
-    // Render thanh phân trang
+    // Render thanh phân trang - CHỈ HIỂN THỊ CÁC NÚT PHÂN TRANG (KHÔNG CÓ CHỮ SỐ LƯỢNG TK)
     if (totalPages > 1) {
       pagEl.style.display = 'flex';
+      let pagesHtml = '';
+
+      if (totalPages <= 6) {
+        for (let i = 1; i <= totalPages; i++) {
+          const activeCls = i === currentPage ? 'active' : '';
+          pagesHtml += `<button class="page-num-btn ${activeCls}" onclick="App.changePage('${type}', ${i})">${i}</button>`;
+        }
+      } else {
+        pagesHtml += `<button class="page-num-btn ${currentPage === 1 ? 'active' : ''}" onclick="App.changePage('${type}', 1)">1</button>`;
+        if (currentPage > 3) pagesHtml += `<span class="page-dots">…</span>`;
+
+        const start = Math.max(2, currentPage - 1);
+        const end = Math.min(totalPages - 1, currentPage + 1);
+        for (let i = start; i <= end; i++) {
+          pagesHtml += `<button class="page-num-btn ${i === currentPage ? 'active' : ''}" onclick="App.changePage('${type}', ${i})">${i}</button>`;
+        }
+
+        if (currentPage < totalPages - 2) pagesHtml += `<span class="page-dots">…</span>`;
+        pagesHtml += `<button class="page-num-btn ${currentPage === totalPages ? 'active' : ''}" onclick="App.changePage('${type}', ${totalPages})">${totalPages}</button>`;
+      }
+
       pagEl.innerHTML = `
-        <button class="page-btn" onclick="App.changePage('${type}', 1)" ${currentPage === 1 ? 'disabled' : ''} title="Trang đầu">«</button>
-        <button class="page-btn" onclick="App.changePage('${type}', ${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} title="Trang trước">‹</button>
-        <span class="page-info-badge">${currentPage} / ${totalPages} (${totalItems} tk)</span>
-        <button class="page-btn" onclick="App.changePage('${type}', ${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} title="Trang sau">›</button>
-        <button class="page-btn" onclick="App.changePage('${type}', ${totalPages})" ${currentPage === totalPages ? 'disabled' : ''} title="Trang cuối">»</button>
+        <button class="page-btn page-arrow" onclick="App.changePage('${type}', ${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''} title="Trang trước">‹</button>
+        <div class="page-numbers-wrap">${pagesHtml}</div>
+        <button class="page-btn page-arrow" onclick="App.changePage('${type}', ${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''} title="Trang sau">›</button>
       `;
     } else {
-      pagEl.style.display = 'flex';
-      pagEl.innerHTML = `<span class="page-info-badge" style="color:var(--text-muted)">Hiển thị ${totalItems} tài khoản</span>`;
+      pagEl.style.display = 'none';
+      pagEl.innerHTML = '';
     }
   }
 
